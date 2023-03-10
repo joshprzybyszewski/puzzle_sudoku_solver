@@ -9,10 +9,6 @@ func (i Iterator) String() string {
 	return fmt.Sprintf("%dx%d %s", r, c, i.GetDifficulty())
 }
 
-func (i Iterator) Valid() bool {
-	return MinIterator <= i && i <= MaxIterator
-}
-
 func (i Iterator) GetSize() (uint8, uint8) {
 	if i < MinIterator || i > MaxIterator {
 		return 0, 0

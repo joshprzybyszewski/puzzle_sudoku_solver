@@ -2,12 +2,14 @@ package solve
 
 import (
 	"errors"
+	"time"
 
-	"github.com/joshprzybyszewski/slitherlink/model"
+	"github.com/joshprzybyszewski/puzzle_sudoku_solver/model"
 )
 
 func SolveClassic(
 	puzzle model.Classic,
+	timeout time.Duration,
 ) (model.Classic, error) {
 	s, ok := solve(puzzle)
 	if !ok {
