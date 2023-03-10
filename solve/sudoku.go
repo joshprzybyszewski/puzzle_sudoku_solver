@@ -27,6 +27,9 @@ func solve(
 
 			for i := 1; i <= len(s); i++ {
 				s[r][c] = uint8(i)
+				if !isValid(s) {
+					continue
+				}
 				solved, ok := solve(s)
 				if ok {
 					return solved, true
@@ -37,11 +40,7 @@ func solve(
 		}
 	}
 
-	if !isValid(s) {
-		return model.Classic{}, false
-	}
-
-	return s, true
+	return s, isValid(s)
 }
 
 func isValid(
@@ -52,6 +51,9 @@ func isValid(
 	for r := 0; r < len(p); r++ {
 		seen = 0
 		for c := range p[r] {
+			if p[r][c] == 0 {
+				continue
+			}
 			b = 1 << p[r][c]
 			if seen&b == b {
 				return false
@@ -64,6 +66,9 @@ func isValid(
 	for c := 0; c < len(p[0]); c++ {
 		seen = 0
 		for r := 0; r < len(p); r++ {
+			if p[r][c] == 0 {
+				continue
+			}
 			b = 1 << p[r][c]
 			if seen&b == b {
 				return false
@@ -74,16 +79,21 @@ func isValid(
 
 	// TODO
 	// check each box that it has all the numbers
-	// for c := 0; c < len(p[0]); c++ {
-	// 	seen = 0
-	// 	for r := 0; r < len(p); r++ {
-	// 		b = 1 << p[r][c]
-	// 		if seen&b == b {
-	// 			return false
-	// 		}
-	// 		seen |= b
-	// 	}
-	// }
+	for box := 0; box < len(p[0]); box++ {
+		seen = 0
+		for r := 3 * (box / 3); r < 3*(box/3)+3; r++ {
+			for c := 3 * (box % 3); c < 3*(box%3)+3; c++ {
+				if p[r][c] == 0 {
+					continue
+				}
+				b = 1 << p[r][c]
+				if seen&b == b {
+					return false
+				}
+				seen |= b
+			}
+		}
+	}
 
 	return true
 }

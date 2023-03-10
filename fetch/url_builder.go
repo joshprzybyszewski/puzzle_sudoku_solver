@@ -7,7 +7,7 @@ import (
 )
 
 func init() {
-	secretStr := os.Getenv(`MASYU_SECRET`)
+	secretStr := os.Getenv(`PUZZLE_SECRET`)
 	if secretStr == `` {
 		return
 	}
@@ -16,7 +16,7 @@ func init() {
 }
 
 const (
-	baseURL       = `https://www.puzzle-loop.com/`
+	baseURL       = `https://www.puzzle-sudoku.com/`
 	hallOfFameURL = baseURL + `hallsubmit.php`
 )
 

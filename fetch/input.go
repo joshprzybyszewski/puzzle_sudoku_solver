@@ -1,6 +1,7 @@
 package fetch
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/joshprzybyszewski/slitherlink/model"
@@ -26,15 +27,20 @@ func (i input) Task() string {
 	return i.task
 }
 
-func (i input) ToClassic() model.Classic {
+func (i input) ToClassic() (model.Classic, error) {
+	if r, c := i.iter.GetSize(); r != 3 || c != 3 {
+		return model.Classic{}, errors.New(`is not classic`)
+	}
 	var r, c int
 
 	var output model.Classic
 
 	for _, b := range i.task {
-		if b >= '0' && b <= '9' {
+		if b > '0' && b <= '9' {
 			output[r][c] = uint8(b - '0')
-		} else if b != '_' {
+		} else if b == '_' {
+			continue
+		} else {
 			c += int(b - 'a')
 		}
 
@@ -46,5 +52,5 @@ func (i input) ToClassic() model.Classic {
 		}
 	}
 
-	return output
+	return output, nil
 }

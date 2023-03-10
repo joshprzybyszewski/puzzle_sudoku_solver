@@ -79,7 +79,10 @@ func getResults(
 	durs := make([]time.Duration, 0, len(inputs))
 
 	for i, sr := range inputs {
-		sud := sr.Input.ToClassic()
+		sud, err := sr.Input.ToClassic()
+		if err != nil {
+			return nil, err
+		}
 
 		t0 := time.Now()
 		sol, err := solve.SolveClassic(

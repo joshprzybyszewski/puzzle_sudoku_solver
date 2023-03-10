@@ -49,7 +49,10 @@ func compete(iter model.Iterator) error {
 		return err
 	}
 
-	p := input.ToClassic()
+	p, err := input.ToClassic()
+	if err != nil {
+		return err
+	}
 
 	t0 := time.Now()
 	sol, err := solve.SolveClassic(

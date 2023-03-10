@@ -5,14 +5,14 @@ import "strconv"
 type Difficulty uint8
 
 const (
-	invalidDifficulty Difficulty = 0
+	invalidDifficulty Difficulty = 42
 
-	basic        Difficulty = 1
-	easy         Difficulty = 2
-	intermediate Difficulty = 3
-	advanced     Difficulty = 4
-	extreme      Difficulty = 5
-	evil         Difficulty = 6
+	basic        Difficulty = 0
+	easy         Difficulty = 1
+	intermediate Difficulty = 2
+	advanced     Difficulty = 3
+	extreme      Difficulty = 4
+	evil         Difficulty = 5
 )
 
 func (d Difficulty) String() string {
