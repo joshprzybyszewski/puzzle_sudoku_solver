@@ -36,6 +36,6 @@ results: ## Runs the solver to update the reported results on the readme page
 
 .PHONY: lambda
 lambda: ## Builds the app so that we can serve it in a lambda
-	GOOS=linux CGO_ENABLED=0 go build -o puzzler-solver -tags=deployed lambda/main.go
+	GOOS=linux CGO_ENABLED=0 go build -o puzzler-solver -tags=deployed main.go
 	zip puzzler-solver.zip puzzler-solver
 	rm puzzler-solver
