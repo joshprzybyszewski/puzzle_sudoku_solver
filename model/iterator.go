@@ -18,8 +18,11 @@ func (i Iterator) GetSize() (uint8, uint8) {
 		return 3, 3
 	}
 
-	// TODO
-	return 0, 0
+	if i == 6 {
+		return 3, 4
+	}
+
+	return 4, 4
 }
 
 func (i Iterator) GetDifficulty() Difficulty {
@@ -31,5 +34,5 @@ func (i Iterator) GetDifficulty() Difficulty {
 		return Difficulty(i)
 	}
 
-	return invalidDifficulty
+	return advanced
 }

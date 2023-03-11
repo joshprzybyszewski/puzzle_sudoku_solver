@@ -1,7 +1,6 @@
 package adapter
 
 import (
-	"errors"
 	"time"
 
 	smodel "github.com/joshprzybyszewski/puzzle_sudoku_solver/model"
@@ -13,8 +12,12 @@ func solveGame(
 	timeout time.Duration,
 ) error {
 	iter := smodel.Iterator(g.Iterator)
-	if r, c := iter.GetSize(); r != 3 || c != 3 {
-		return errors.New(`only classic can be solved`)
+	if r, c := iter.GetSize(); c == 4 {
+		if r == 3 {
+			return solveTwelve(g, timeout)
+		}
+		// panic(`TODO`)
+		return solveTwelve(g, timeout)
 	}
 
 	return solveClassic(g, timeout)

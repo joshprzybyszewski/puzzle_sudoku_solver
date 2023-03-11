@@ -7,20 +7,20 @@ import (
 	"github.com/joshprzybyszewski/puzzle_sudoku_solver/model"
 )
 
-func SolveClassic(
-	puzzle model.Classic,
+func Twelve(
+	puzzle model.Twelve,
 	timeout time.Duration,
-) (model.Classic, error) {
-	s, ok := solve(puzzle)
+) (model.Twelve, error) {
+	s, ok := solveTwelve(puzzle)
 	if !ok {
-		return model.Classic{}, errors.New(`did not solve`)
+		return model.Twelve{}, errors.New(`did not solve`)
 	}
 	return s, nil
 }
 
-func solve(
-	s model.Classic,
-) (model.Classic, bool) {
+func solveTwelve(
+	s model.Twelve,
+) (model.Twelve, bool) {
 	for r := range s {
 		for c := range s[r] {
 			if s[r][c] != 0 {
@@ -29,24 +29,24 @@ func solve(
 
 			for i := 1; i <= len(s); i++ {
 				s[r][c] = uint8(i)
-				if !isValid(s) {
+				if !isValidTwelve(s) {
 					continue
 				}
-				solved, ok := solve(s)
+				solved, ok := solveTwelve(s)
 				if ok {
 					return solved, true
 				}
 			}
 
-			return model.Classic{}, false
+			return model.Twelve{}, false
 		}
 	}
 
-	return s, isValid(s)
+	return s, isValidTwelve(s)
 }
 
-func isValid(
-	p model.Classic,
+func isValidTwelve(
+	p model.Twelve,
 ) bool {
 	var seen, b uint16
 	// check each row that it has all the numbers
@@ -79,12 +79,11 @@ func isValid(
 		}
 	}
 
-	// TODO
 	// check each box that it has all the numbers
 	for box := 0; box < len(p[0]); box++ {
 		seen = 0
 		for r := 3 * (box / 3); r < 3*(box/3)+3; r++ {
-			for c := 3 * (box % 3); c < 3*(box%3)+3; c++ {
+			for c := 4 * (box % 3); c < 4*(box%3)+4; c++ {
 				if p[r][c] == 0 {
 					continue
 				}
