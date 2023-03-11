@@ -2,5 +2,5 @@ package model
 
 const (
 	MinIterator Iterator = 0
-	MaxIterator Iterator = 6
+	MaxIterator Iterator = 7
 )

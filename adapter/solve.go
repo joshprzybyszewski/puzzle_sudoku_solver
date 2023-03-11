@@ -16,8 +16,7 @@ func solveGame(
 		if r == 3 {
 			return solveTwelve(g, timeout)
 		}
-		// panic(`TODO`)
-		return solveTwelve(g, timeout)
+		return solveSixteen(g, timeout)
 	}
 
 	return solveClassic(g, timeout)
