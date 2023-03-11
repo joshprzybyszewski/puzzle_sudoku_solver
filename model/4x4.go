@@ -1,7 +1,5 @@
 package model
 
-import "fmt"
-
 type Sixteen struct {
 	grid [16][16]uint8
 
@@ -32,18 +30,26 @@ func (p *Sixteen) IsSet(r, c uint8) bool {
 	return p.grid[r][c] != 0
 }
 
+func (p *Sixteen) CanPlace(r, c, val uint8) bool {
+	b := uint16(1) << (val - 1)
+	return p.cannots[r][c]&b == 0
+}
+
 func (p *Sixteen) Val(r, c uint8) uint8 {
 	return p.grid[r][c]
 }
 
 func (p *Sixteen) InitialPlace(r, c, val uint8) {
-	if !p.place(r, c, val) {
+	if !p.Place(r, c, val) {
 		panic(`dev error`)
 	}
 }
 
 func (p *Sixteen) placeLast(r, c uint8) bool {
-	if p.grid[r][c] != 0 || p.remaining[r][c] != 1 {
+	if p.grid[r][c] != 0 {
+		return true
+	}
+	if p.remaining[r][c] != 1 {
 		panic(`dev error`)
 	}
 	val := uint8(1)
@@ -53,10 +59,13 @@ func (p *Sixteen) placeLast(r, c uint8) bool {
 		b <<= 1
 	}
 
-	return p.place(r, c, val)
+	return p.Place(r, c, val)
 }
 
-func (p *Sixteen) place(r, c, val uint8) bool {
+func (p *Sixteen) Place(r, c, val uint8) (ret bool) {
+	if p.grid[r][c] == val {
+		return true
+	}
 
 	b := uint16(1) << (val - 1)
 	if p.cannots[r][c]&b == b {
@@ -68,7 +77,7 @@ func (p *Sixteen) place(r, c, val uint8) bool {
 	}
 
 	p.grid[r][c] = val
-	p.cannots[r][c] = 0xFFFF
+	// p.cannots[r][c] = 0xFFFF
 	p.remaining[r][c] = 0
 	p.remainingRows[r]--
 
@@ -84,9 +93,11 @@ func (p *Sixteen) place(r, c, val uint8) bool {
 		p.cannots[r2][c] |= b
 
 		if p.remaining[r2][c] == 1 {
-			if !p.placeLast(r2, c) {
-				return false
-			}
+			defer func(r, c uint8) {
+				if ret {
+					ret = p.placeLast(r, c)
+				}
+			}(r2, c)
 		}
 	}
 
@@ -102,9 +113,11 @@ func (p *Sixteen) place(r, c, val uint8) bool {
 		p.cannots[r][c2] |= b
 
 		if p.remaining[r][c2] == 1 {
-			if !p.placeLast(r, c2) {
-				return false
-			}
+			defer func(r, c uint8) {
+				if ret {
+					ret = p.placeLast(r, c)
+				}
+			}(r, c2)
 		}
 	}
 
@@ -128,9 +141,11 @@ func (p *Sixteen) place(r, c, val uint8) bool {
 			p.cannots[r2][c2] |= b
 
 			if p.remaining[r2][c2] == 1 {
-				if !p.placeLast(r2, c2) {
-					return false
-				}
+				defer func(r, c uint8) {
+					if ret {
+						ret = p.placeLast(r, c)
+					}
+				}(r2, c2)
 			}
 		}
 	}
@@ -138,31 +153,29 @@ func (p *Sixteen) place(r, c, val uint8) bool {
 	return true
 }
 
-func (p *Sixteen) Place(r, c, val uint8) (Sixteen, bool) {
-	cpy := *p
-	return cpy, cpy.place(r, c, val)
-}
-
-func (p *Sixteen) Best() (uint8, uint8) {
-	var r uint8
+func (p *Sixteen) BestRow() uint8 {
+	r := p.Size() + 1
 	b := p.Size() + 1
 	for other := uint8(0); other < p.Size(); other++ {
 		if p.remainingRows[other] == 1 {
-			r = other
-			break
+			return other
 		}
 		if p.remainingRows[other] > 0 && p.remainingRows[other] < b {
 			b = p.remainingRows[other]
 			r = other
 		}
 	}
+	return r
+}
 
-	if b > p.Size() {
+func (p *Sixteen) Best() (uint8, uint8) {
+	r := p.BestRow()
+	if r > p.Size() {
 		// did not find!
-		return p.Size() + 1, p.Size() + 1
+		return r, p.Size() + 1
 	}
 
-	b = p.Size() + 1
+	b := p.Size() + 1
 	var c uint8
 
 	for j := range p.remaining[r] {
@@ -204,9 +217,6 @@ func (p *Sixteen) IsSolved() bool {
 	for c := uint8(0); c < p.Size(); c++ {
 		seen = 0
 		for r := uint8(0); r < p.Size(); r++ {
-			if p.grid[r][c] == 0 {
-				return false
-			}
 			b = 1 << (p.grid[r][c] - 1)
 			if seen&b == b {
 				return false
@@ -220,9 +230,6 @@ func (p *Sixteen) IsSolved() bool {
 		seen = 0
 		for r := 4 * (box / 4); r < 4*(box/4)+4; r++ {
 			for c := 4 * (box % 4); c < 4*(box%4)+4; c++ {
-				if p.grid[r][c] == 0 {
-					return false
-				}
 				b = 1 << (p.grid[r][c] - 1)
 				if seen&b == b {
 					return false
@@ -261,9 +268,9 @@ func (p Sixteen) String() string {
 			}
 		}
 
-		for c := 0; c < 4; c++ {
-			output = append(output, []byte(fmt.Sprintf(" %016b", p.cannots[r][c]))...)
-		}
+		// for c := 0; c < 4; c++ {
+		// 	output = append(output, []byte(fmt.Sprintf(" %016b", p.cannots[r][c]))...)
+		// }
 		output = append(output, '\n')
 	}
 	output = append(output, []byte("'-------'-------'-------'-------'\n")...)
