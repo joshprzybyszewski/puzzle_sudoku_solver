@@ -21,18 +21,17 @@ func Sixteen(
 func solveSixteen(
 	s model.Sixteen,
 ) (model.Sixteen, bool) {
-	for r := range s {
-		for c := range s[r] {
-			if s[r][c] != 0 {
+	for r := uint8(0); r < s.Size(); r++ {
+		for c := uint8(0); c < s.Size(); c++ {
+			if s.IsSet(r, c) {
 				continue
 			}
-
-			for i := 1; i <= len(s); i++ {
-				s[r][c] = uint8(i)
-				if !isValidSixteen(s) {
+			for i := uint8(1); i <= s.Size(); i++ {
+				cpy, ok := s.Place(r, c, i)
+				if !ok {
 					continue
 				}
-				solved, ok := solveSixteen(s)
+				solved, ok := solveSixteen(cpy)
 				if ok {
 					return solved, true
 				}
@@ -42,59 +41,5 @@ func solveSixteen(
 		}
 	}
 
-	return s, isValidSixteen(s)
-}
-
-func isValidSixteen(
-	p model.Sixteen,
-) bool {
-	var seen, b uint16
-	// check each row that it has all the numbers
-	for r := 0; r < len(p); r++ {
-		seen = 0
-		for c := range p[r] {
-			if p[r][c] == 0 {
-				continue
-			}
-			b = 1 << (p[r][c] - 1)
-			if seen&b == b {
-				return false
-			}
-			seen |= b
-		}
-	}
-
-	// check each col that it has all the numbers
-	for c := 0; c < len(p[0]); c++ {
-		seen = 0
-		for r := 0; r < len(p); r++ {
-			if p[r][c] == 0 {
-				continue
-			}
-			b = 1 << (p[r][c] - 1)
-			if seen&b == b {
-				return false
-			}
-			seen |= b
-		}
-	}
-
-	// check each box that it has all the numbers
-	for box := 0; box < len(p[0]); box++ {
-		seen = 0
-		for r := 4 * (box / 4); r < 4*(box/4)+4; r++ {
-			for c := 4 * (box % 4); c < 4*(box%4)+4; c++ {
-				if p[r][c] == 0 {
-					continue
-				}
-				b = 1 << (p[r][c] - 1)
-				if seen&b == b {
-					return false
-				}
-				seen |= b
-			}
-		}
-	}
-
-	return true
+	return s, s.IsSolved()
 }
