@@ -29,7 +29,6 @@ func (p *Sixteen) Place(r, c, val uint8) (Sixteen, bool) {
 	for c := range p.grid[r] {
 		if p.grid[r][c] == val {
 			return Sixteen{}, false
-
 		}
 	}
 
