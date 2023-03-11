@@ -11,7 +11,7 @@ func Sixteen(
 	puzzle model.Sixteen,
 	timeout time.Duration,
 ) (model.Sixteen, error) {
-	s, ok := solveSixteen(puzzle)
+	s, ok := solveSixteen(&puzzle)
 	if !ok {
 		return model.Sixteen{}, errors.New(`did not solve`)
 	}
@@ -19,27 +19,26 @@ func Sixteen(
 }
 
 func solveSixteen(
-	s model.Sixteen,
+	s *model.Sixteen,
 ) (model.Sixteen, bool) {
-	for r := uint8(0); r < s.Size(); r++ {
-		for c := uint8(0); c < s.Size(); c++ {
-			if s.IsSet(r, c) {
-				continue
-			}
-			for i := uint8(1); i <= s.Size(); i++ {
-				cpy, ok := s.Place(r, c, i)
-				if !ok {
-					continue
-				}
-				solved, ok := solveSixteen(cpy)
-				if ok {
-					return solved, true
-				}
-			}
 
-			return model.Sixteen{}, false
+	r, c := s.Best()
+	if r > s.Size() {
+		if s.IsSolved() {
+			return *s, true
+		}
+		return model.Sixteen{}, false
+	}
+	for i := uint8(1); i <= s.Size(); i++ {
+		cpy, ok := s.Place(r, c, i)
+		if !ok {
+			continue
+		}
+		solved, ok := solveSixteen(&cpy)
+		if ok {
+			return solved, true
 		}
 	}
 
-	return s, s.IsSolved()
+	return model.Sixteen{}, false
 }

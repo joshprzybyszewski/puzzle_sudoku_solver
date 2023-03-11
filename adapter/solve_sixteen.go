@@ -33,20 +33,22 @@ func convertSixteenTask(
 ) smodel.Sixteen {
 	var r, c uint8
 
-	var output smodel.Sixteen
+	output := smodel.NewSixteen()
 
 	var b byte
 	for i := 0; i < len(task); i++ {
 		b = task[i]
-		if b > '0' && b <= '9' {
-			if b == '1' && task[i+1] >= '0' && task[i+1] <= '6' {
-				output, _ = output.Place(r, c, 10+uint8(task[i+1]-'0'))
+		if b == '_' {
+			continue
+		}
+
+		if b >= '0' && b <= '9' {
+			if b == '1' && i+1 < len(task) && task[i+1] >= '0' && task[i+1] <= '6' {
+				output.InitialPlace(r, c, 10+uint8(task[i+1]-'0'))
 				i++
 			} else {
-				output, _ = output.Place(r, c, uint8(b-'0'))
+				output.InitialPlace(r, c, uint8(b-'0'))
 			}
-		} else if b == '_' {
-			continue
 		} else {
 			c += uint8(b - 'a')
 		}
