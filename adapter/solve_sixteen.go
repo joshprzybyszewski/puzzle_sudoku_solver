@@ -1,6 +1,7 @@
 package adapter
 
 import (
+	"context"
 	"time"
 
 	smodel "github.com/joshprzybyszewski/puzzle_sudoku_solver/model"
@@ -15,9 +16,12 @@ func solveSixteen(
 	iter := smodel.Iterator(g.Iterator)
 	sud := convertSixteenTask(iter, g.Task)
 
+	ctx, cancelFn := context.WithTimeout(context.Background(), timeout)
+	defer cancelFn()
+
 	sol, err := solve.Sixteen(
+		ctx,
 		sud,
-		timeout,
 	)
 	if err != nil {
 		return err

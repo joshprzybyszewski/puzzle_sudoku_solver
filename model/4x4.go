@@ -155,13 +155,13 @@ func (p *Sixteen) Place(r, c, val uint8) (ret bool) {
 
 func (p *Sixteen) BestRow() uint8 {
 	r := p.Size() + 1
-	b := p.Size() + 1
+	br := p.Size() + 1
 	for other := uint8(0); other < p.Size(); other++ {
 		if p.remainingRows[other] == 1 {
 			return other
 		}
-		if p.remainingRows[other] > 0 && p.remainingRows[other] < b {
-			b = p.remainingRows[other]
+		if p.remainingRows[other] > 0 && p.remainingRows[other] < br {
+			br = p.remainingRows[other]
 			r = other
 		}
 	}
