@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/joshprzybyszewski/puzzle_sudoku_solver/adapter"
-	"github.com/joshprzybyszewski/puzzle_sudoku_solver/model"
-	"github.com/joshprzybyszewski/puzzle_sudoku_solver/profile"
+	"github.com/joshprzybyszewski/puzzle_sudoku_solver/internal/adapter"
+	"github.com/joshprzybyszewski/puzzle_sudoku_solver/internal/model"
+	"github.com/joshprzybyszewski/puzzle_sudoku_solver/internal/profile"
 	"github.com/joshprzybyszewski/puzzler/compete"
 	pmodel "github.com/joshprzybyszewski/puzzler/model"
 	"github.com/joshprzybyszewski/puzzler/results"

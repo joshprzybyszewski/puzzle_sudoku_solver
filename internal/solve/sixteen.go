@@ -5,7 +5,7 @@ import (
 	"errors"
 	"runtime"
 
-	"github.com/joshprzybyszewski/puzzle_sudoku_solver/model"
+	"github.com/joshprzybyszewski/puzzle_sudoku_solver/internal/model"
 )
 
 func Sixteen(

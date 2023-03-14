@@ -3,8 +3,8 @@ package adapter
 import (
 	"time"
 
-	smodel "github.com/joshprzybyszewski/puzzle_sudoku_solver/model"
-	"github.com/joshprzybyszewski/puzzle_sudoku_solver/solve"
+	smodel "github.com/joshprzybyszewski/puzzle_sudoku_solver/internal/model"
+	"github.com/joshprzybyszewski/puzzle_sudoku_solver/internal/solve"
 	"github.com/joshprzybyszewski/puzzler/model"
 )
 
