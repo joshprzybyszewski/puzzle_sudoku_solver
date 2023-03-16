@@ -1,5 +1,9 @@
 package model
 
+import (
+	pmodel "github.com/joshprzybyszewski/puzzler/model"
+)
+
 type Sixteen struct {
 	grid [16][16]uint8
 
@@ -9,21 +13,55 @@ type Sixteen struct {
 	remainingRows [16]uint8
 }
 
-func NewSixteen() Sixteen {
-	s := Sixteen{}
+func NewSixteen(
+	task pmodel.Task,
+) Sixteen {
+	puzz := Sixteen{}
 
-	for r := range s.remaining {
-		for c := range s.remaining[r] {
-			s.remaining[r][c] = s.Size()
+	for r := range puzz.remaining {
+		for c := range puzz.remaining[r] {
+			puzz.remaining[r][c] = puzz.Size()
 		}
-		s.remainingRows[r] = s.Size()
+		puzz.remainingRows[r] = puzz.Size()
 	}
 
-	return s
+	var r, c uint8
+
+	var b byte
+	for i := 0; i < len(task); i++ {
+		b = task[i]
+		if b == '_' {
+			continue
+		}
+
+		if b >= '0' && b <= '9' {
+			if b == '1' && i+1 < len(task) && task[i+1] >= '0' && task[i+1] <= '6' {
+				puzz.InitialPlace(r, c, 10+uint8(task[i+1]-'0'))
+				i++
+			} else {
+				puzz.InitialPlace(r, c, uint8(b-'0'))
+			}
+		} else {
+			c += uint8(b - 'a')
+		}
+
+		c++
+
+		if c >= puzz.Size() {
+			r += (c / puzz.Size())
+			c %= puzz.Size()
+		}
+	}
+
+	return puzz
 }
 
 func (p *Sixteen) Size() uint8 {
 	return uint8(len(p.grid))
+}
+
+func (p *Sixteen) Grid() [16][16]uint8 {
+	return p.grid
 }
 
 func (p *Sixteen) IsSet(r, c uint8) bool {

@@ -22,7 +22,11 @@ func (i Iterator) GetSize() (uint8, uint8) {
 		return 3, 4
 	}
 
-	return 4, 4
+	if i == 7 {
+		return 4, 4
+	}
+
+	return 0, 0
 }
 
 func (i Iterator) GetDifficulty() Difficulty {
