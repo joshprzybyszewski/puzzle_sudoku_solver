@@ -7,6 +7,10 @@ import (
 	"github.com/joshprzybyszewski/puzzler/model"
 )
 
+const (
+	URL = `https://www.puzzle-sudoku.com/`
+)
+
 var (
 	maxTimeout = 15 * time.Second
 )
@@ -54,7 +58,7 @@ func (s solver) Timeout() time.Duration {
 }
 
 func (s solver) URL() string {
-	return `https://www.puzzle-sudoku.com/`
+	return URL
 }
 
 func (s solver) Solve(g *model.Game) error {
