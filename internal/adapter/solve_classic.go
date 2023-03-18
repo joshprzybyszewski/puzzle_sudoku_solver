@@ -1,7 +1,7 @@
 package adapter
 
 import (
-	"time"
+	"context"
 
 	smodel "github.com/joshprzybyszewski/puzzle_sudoku_solver/internal/model"
 	"github.com/joshprzybyszewski/puzzle_sudoku_solver/internal/solve"
@@ -9,14 +9,14 @@ import (
 )
 
 func solveClassic(
+	ctx context.Context,
 	g *model.Game,
-	timeout time.Duration,
 ) error {
 	sud := ConvertClassicTask(g.Task)
 
 	sol, err := solve.Classic(
+		ctx,
 		sud,
-		timeout,
 	)
 	if err != nil {
 		return err

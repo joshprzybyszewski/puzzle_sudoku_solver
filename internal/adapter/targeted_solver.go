@@ -1,6 +1,7 @@
 package adapter
 
 import (
+	"context"
 	"time"
 
 	smodel "github.com/joshprzybyszewski/puzzle_sudoku_solver/internal/model"
@@ -51,7 +52,10 @@ func (s targetedSolver) GameID() model.GameID {
 }
 
 func (s targetedSolver) Solve(g *model.Game) error {
-	return solveGame(g, s.timeout)
+	ctx, cancelFn := context.WithTimeout(context.Background(), s.timeout)
+	defer cancelFn()
+
+	return solveGame(ctx, g)
 }
 
 func (s targetedSolver) Pretty(g model.Game) string {

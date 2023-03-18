@@ -1,6 +1,7 @@
 package adapter
 
 import (
+	"context"
 	"time"
 
 	smodel "github.com/joshprzybyszewski/puzzle_sudoku_solver/internal/model"
@@ -32,6 +33,7 @@ func NewSolver(
 	if max > smodel.MaxIterator {
 		max = smodel.MaxIterator
 	}
+	min = max
 	if timeout < 0 {
 		timeout = 0
 	} else if timeout > maxTimeout {
@@ -62,7 +64,10 @@ func (s solver) URL() string {
 }
 
 func (s solver) Solve(g *model.Game) error {
-	return solveGame(g, s.Timeout())
+	ctx, cancelFn := context.WithTimeout(context.Background(), s.Timeout())
+	defer cancelFn()
+
+	return solveGame(ctx, g)
 }
 
 func (s solver) Pretty(g model.Game) string {

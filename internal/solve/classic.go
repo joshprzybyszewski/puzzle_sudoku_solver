@@ -1,15 +1,15 @@
 package solve
 
 import (
+	"context"
 	"errors"
-	"time"
 
 	"github.com/joshprzybyszewski/puzzle_sudoku_solver/internal/model"
 )
 
 func Classic(
+	ctx context.Context,
 	puzzle model.Classic,
-	timeout time.Duration,
 ) (model.Classic, error) {
 	s, ok := solve(puzzle)
 	if !ok {

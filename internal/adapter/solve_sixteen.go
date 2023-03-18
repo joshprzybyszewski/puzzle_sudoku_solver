@@ -2,7 +2,6 @@ package adapter
 
 import (
 	"context"
-	"time"
 
 	smodel "github.com/joshprzybyszewski/puzzle_sudoku_solver/internal/model"
 	"github.com/joshprzybyszewski/puzzle_sudoku_solver/internal/solve"
@@ -10,13 +9,10 @@ import (
 )
 
 func solveSixteen(
+	ctx context.Context,
 	g *model.Game,
-	timeout time.Duration,
 ) error {
 	sud := smodel.NewSixteen(g.Task)
-
-	ctx, cancelFn := context.WithTimeout(context.Background(), timeout)
-	defer cancelFn()
 
 	sol, err := solve.Sixteen(
 		ctx,

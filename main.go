@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"time"
@@ -59,6 +60,7 @@ func main() {
 
 	for i := 0; i < *numIterations; i++ {
 		err := compete.Run(
+			context.Background(),
 			adapter.NewSolver(
 				model.Iterator(*iterStart),
 				model.Iterator(*iterFinish),

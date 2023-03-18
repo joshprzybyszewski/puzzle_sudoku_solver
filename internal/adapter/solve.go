@@ -1,23 +1,23 @@
 package adapter
 
 import (
-	"time"
+	"context"
 
 	smodel "github.com/joshprzybyszewski/puzzle_sudoku_solver/internal/model"
 	"github.com/joshprzybyszewski/puzzler/model"
 )
 
 func solveGame(
+	ctx context.Context,
 	g *model.Game,
-	timeout time.Duration,
 ) error {
 	iter := smodel.Iterator(g.Iterator)
 	if r, c := iter.GetSize(); c == 4 {
 		if r == 3 {
-			return solveTwelve(g, timeout)
+			return solveTwelve(ctx, g)
 		}
-		return solveSixteen(g, timeout)
+		return solveSixteen(ctx, g)
 	}
 
-	return solveClassic(g, timeout)
+	return solveClassic(ctx, g)
 }

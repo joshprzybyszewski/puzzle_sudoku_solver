@@ -1,6 +1,8 @@
 package model
 
 import (
+	"fmt"
+
 	pmodel "github.com/joshprzybyszewski/puzzler/model"
 )
 
@@ -111,6 +113,10 @@ func (p *Sixteen) Place(r, c, val uint8) (ret bool) {
 	}
 
 	if val > p.Size() || p.grid[r][c] != 0 {
+		fmt.Printf("r: %d\n", r)
+		fmt.Printf("c: %d\n", c)
+		fmt.Printf("val: %d\n", val)
+		fmt.Printf("%s\n", p)
 		panic(`dev error`)
 	}
 
