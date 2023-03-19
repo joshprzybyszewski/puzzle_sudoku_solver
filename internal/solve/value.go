@@ -2,12 +2,12 @@ package solve
 
 type value uint8
 
-func (v value) bit() uint16 {
+func (v value) bit() bits {
 	return valsToBits[v]
 }
 
 var (
-	valsToBits = [17]uint16{
+	valsToBits = [17]bits{
 		0xFFFF, // ERROR
 		1 << 0,
 		1 << 1,

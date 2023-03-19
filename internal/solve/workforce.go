@@ -7,8 +7,6 @@ import (
 	"runtime/debug"
 	"strings"
 	"time"
-
-	"github.com/joshprzybyszewski/puzzle_sudoku_solver/internal/model"
 )
 
 const (
@@ -17,22 +15,22 @@ const (
 )
 
 type workforce struct {
-	solution chan model.Sixteen
+	solution chan puzzle
 
-	work chan model.Sixteen
+	work chan puzzle
 
 	workers [maxNumWorkers]worker
 }
 
 func newWorkforce() workforce {
 	wf := workforce{
-		solution: make(chan model.Sixteen, 1),
-		work:     make(chan model.Sixteen, runtime.NumCPU()),
+		solution: make(chan puzzle, 1),
+		work:     make(chan puzzle, runtime.NumCPU()),
 	}
 
 	for i := range wf.workers {
 		wf.workers[i] = newWorker(
-			func(sol model.Sixteen) {
+			func(sol puzzle) {
 				defer func() {
 					// if the solution channel has been closed, then don't do anything.
 					_ = recover()
@@ -96,8 +94,8 @@ func (w *workforce) stop() {
 
 func (w *workforce) solve(
 	ctx context.Context,
-	puzz model.Sixteen,
-) (model.Sixteen, error) {
+	puzz puzzle,
+) (puzzle, error) {
 
 	if puzz.IsSolved() {
 		return puzz, nil
@@ -107,10 +105,10 @@ func (w *workforce) solve(
 
 	select {
 	case <-ctx.Done():
-		return model.Sixteen{}, fmt.Errorf("Ran out of time.")
+		return puzzle{}, fmt.Errorf("Ran out of time.")
 	case sol, ok := <-w.solution:
 		if !ok {
-			return model.Sixteen{}, fmt.Errorf("did not find the solution")
+			return puzzle{}, fmt.Errorf("did not find the solution")
 		}
 		return sol, nil
 	}
@@ -118,7 +116,7 @@ func (w *workforce) solve(
 
 func (w *workforce) sendWork(
 	ctx context.Context,
-	initial model.Sixteen,
+	initial puzzle,
 ) {
 	defer func() {
 		// if the work channel has been closed, then don't do anything.

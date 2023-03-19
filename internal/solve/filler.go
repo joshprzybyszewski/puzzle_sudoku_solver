@@ -1,15 +1,13 @@
 package solve
 
-import "github.com/joshprzybyszewski/puzzle_sudoku_solver/internal/model"
-
 type pendingWrite struct {
 	r, c uint8
-	val  uint8
+	val  value
 
 	prev *pendingWrite
 }
 
-func (pw *pendingWrite) apply(s *model.Sixteen) bool {
+func (pw *pendingWrite) apply(s *puzzle) bool {
 	if pw.val == 0 {
 		return true
 	}
@@ -30,21 +28,21 @@ func newFiller() filler {
 }
 
 func (rf *filler) fillRow(
-	s *model.Sixteen,
+	s *puzzle,
 	r, c uint8,
-	hasPlaced uint16,
+	hasPlaced bits,
 	prev pendingWrite,
 ) {
 
-	var val uint8
-	var b uint16
+	var val value
+	var b bits
 
 	for ; c < s.Size(); c++ {
 		if s.IsSet(r, c) {
 			hasPlaced |= valsToBits[s.Val(r, c)]
 			continue
 		}
-		for val = 1; val <= s.Size(); val++ {
+		for val = 1; val <= value(s.Size()); val++ {
 			b = valsToBits[val]
 			if hasPlaced&b == b {
 				continue
@@ -74,22 +72,22 @@ func (rf *filler) fillRow(
 }
 
 func (rf *filler) fillCol(
-	s *model.Sixteen,
+	s *puzzle,
 	r, c uint8,
-	hasPlaced uint16,
+	hasPlaced bits,
 	prev pendingWrite,
 ) {
 
-	var val uint8
-	var b uint16
+	var val value
+	var b bits
 
 	for ; r < s.Size(); r++ {
 		if s.IsSet(r, c) {
 			hasPlaced |= valsToBits[s.Val(r, c)]
 			continue
 		}
-		for val = 1; val <= s.Size(); val++ {
-			b = valsToBits[val]
+		for val = 1; val <= value(s.Size()); val++ {
+			b = val.bit()
 			if hasPlaced&b == b {
 				continue
 			}

@@ -2,18 +2,16 @@ package solve
 
 import (
 	"context"
-
-	"github.com/joshprzybyszewski/puzzle_sudoku_solver/internal/model"
 )
 
 type worker struct {
-	state model.Sixteen
+	state puzzle
 
-	sendAnswer func(model.Sixteen)
+	sendAnswer func(puzzle)
 }
 
 func newWorker(
-	sendAnswer func(model.Sixteen),
+	sendAnswer func(puzzle),
 ) worker {
 	return worker{
 		sendAnswer: sendAnswer,

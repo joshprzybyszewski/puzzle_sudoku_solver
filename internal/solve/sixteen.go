@@ -8,12 +8,23 @@ import (
 
 func Sixteen(
 	ctx context.Context,
-	puzzle model.Sixteen,
+	s model.Sixteen,
 ) (model.Sixteen, error) {
 
 	wf := newWorkforce()
 	wf.start(ctx)
-	defer wf.stop()
+	output, err := wf.solve(ctx, NewPuzzleFromSixteen(s))
+	wf.stop()
+	if err != nil {
+		return model.Sixteen{}, err
+	}
 
-	return wf.solve(ctx, puzzle)
+	answer := model.Sixteen{}
+	for r := range answer {
+		for c := range answer[r] {
+			answer[r][c] = uint8(output.grid[r][c])
+		}
+	}
+
+	return answer, nil
 }

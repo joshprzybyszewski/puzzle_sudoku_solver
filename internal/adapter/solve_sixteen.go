@@ -29,11 +29,14 @@ func solveSixteen(
 func convertSixteenAnswer(
 	p smodel.Sixteen,
 ) model.Answer {
-	output := make([]byte, 0, int(p.Size())*int(p.Size())*2)
+	output := make([]byte, 0, int(len(p))*int(len(p))*2)
 
-	for r := uint8(0); r < p.Size(); r++ {
-		for c := uint8(0); c < p.Size(); c++ {
-			v := p.Val(r, c)
+	var c int
+	var v uint8
+
+	for r := range p {
+		for c = range p[r] {
+			v = p[r][c]
 			if v >= 10 {
 				output = append(output, '1')
 				v -= 10
