@@ -36,14 +36,11 @@ func (w *worker) process(
 	r := w.state.BestRow()
 	if r > w.state.Size() {
 		if w.state.IsSolved() {
-			fmt.Printf("solved\n%s\n", &w.state)
 			w.sendAnswer(w.state)
 			return
 		}
-		fmt.Printf("not solved\n%s\n", &w.state)
 		return
 	}
-	// fmt.Printf("processing\n%s\n", &w.state)
 
 	rf := rowFilled{}
 	rf.fillSixteenRow(
@@ -182,18 +179,17 @@ func (w *workforce) sendWork(
 		return
 	}
 
-	// TODO send the initial state, then find a way to send similar, but different work.
-	// w.work <- initial
-	// if len(w.workers) == 1 {
-	// 	// if there is only one worker, then we _need_ the initial state to be solved.
-	// 	select {
-	// 	case <-ctx.Done():
-	// 		return
-	// 	}
-	// }
+	w.work <- initial
+	if len(w.workers) == 1 {
+		// if there is only one worker, then we _need_ the initial state to be solved.
+		select {
+		case <-ctx.Done():
+			return
+		}
+	}
 
-	r := initial.BestRow()
-	if r > initial.Size() {
+	c := initial.BestCol()
+	if c > initial.Size() {
 		if initial.IsSolved() {
 			w.solution <- initial
 			return
@@ -201,16 +197,14 @@ func (w *workforce) sendWork(
 		panic(`what happened`)
 	}
 
-	// TODO find a way to fill "the second best row" or something.
 	rf := rowFilled{}
-	rf.fillSixteenRow(
+	rf.fillSixteenCol(
 		&initial,
-		r, 0,
+		0, c,
 		0,
 		func(*model.Sixteen) bool { return true },
 	)
 
-	fmt.Printf("inital state has %d permutations\n", rf.lastIndex)
 	cpy := initial
 	for i := 0; i < rf.lastIndex; i++ {
 		if rf.entries[i](&cpy) {

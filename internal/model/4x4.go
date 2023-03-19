@@ -232,6 +232,38 @@ func (p *Sixteen) BestRow() uint8 {
 	return br
 }
 
+func (p *Sixteen) BestCol() uint8 {
+	var cur int
+	bc := p.Size() + 1
+	b := -1
+
+	for c := uint8(0); c < p.Size(); c++ {
+		cur = -1
+		for r := uint8(0); r < p.Size(); r++ {
+			if p.remaining[r][c] == 0 {
+				continue
+			}
+			if cur == -1 {
+				cur = int(p.remaining[r][c])
+			} else {
+				cur *= int(p.remaining[r][c])
+			}
+			if b > 0 && cur > b {
+				break
+			}
+		}
+		if cur < 0 {
+			continue
+		}
+		if b < 0 || cur < b {
+			b = cur
+			bc = c
+		}
+	}
+
+	return bc
+}
+
 func (p *Sixteen) IsSolved() bool {
 	var seen, b uint16
 	// check each row that it has all the numbers
