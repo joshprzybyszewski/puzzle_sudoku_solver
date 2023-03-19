@@ -1,0 +1,117 @@
+package solve
+
+import "github.com/joshprzybyszewski/puzzle_sudoku_solver/internal/model"
+
+type pendingWrite struct {
+	r, c uint8
+	val  uint8
+
+	prev *pendingWrite
+}
+
+func (pw *pendingWrite) apply(s *model.Sixteen) bool {
+	if pw.val == 0 {
+		return true
+	}
+	if !s.Place(pw.r, pw.c, pw.val) {
+		return false
+	}
+	return pw.prev.apply(s)
+}
+
+type filler struct {
+	/* 46656 = 6^6 */
+	entries   [46656]pendingWrite
+	lastIndex int
+}
+
+func newFiller() filler {
+	return filler{}
+}
+
+func (rf *filler) fillRow(
+	s *model.Sixteen,
+	r, c uint8,
+	hasPlaced uint16,
+	prev pendingWrite,
+) {
+
+	var val uint8
+	var b uint16
+
+	for ; c < s.Size(); c++ {
+		if s.IsSet(r, c) {
+			hasPlaced |= valsToBits[s.Val(r, c)]
+			continue
+		}
+		for val = 1; val <= s.Size(); val++ {
+			b = valsToBits[val]
+			if hasPlaced&b == b {
+				continue
+			}
+			if !s.CanPlace(r, c, val) {
+				continue
+			}
+
+			rf.fillRow(
+				s,
+				r, c+1,
+				hasPlaced|b,
+				pendingWrite{
+					r:    r,
+					c:    c,
+					val:  val,
+					prev: &prev,
+				},
+			)
+		}
+
+		return
+	}
+
+	rf.entries[rf.lastIndex] = prev
+	rf.lastIndex++
+}
+
+func (rf *filler) fillCol(
+	s *model.Sixteen,
+	r, c uint8,
+	hasPlaced uint16,
+	prev pendingWrite,
+) {
+
+	var val uint8
+	var b uint16
+
+	for ; r < s.Size(); r++ {
+		if s.IsSet(r, c) {
+			hasPlaced |= valsToBits[s.Val(r, c)]
+			continue
+		}
+		for val = 1; val <= s.Size(); val++ {
+			b = valsToBits[val]
+			if hasPlaced&b == b {
+				continue
+			}
+			if !s.CanPlace(r, c, val) {
+				continue
+			}
+			rf.fillCol(
+				s,
+				r+1, c,
+				hasPlaced|b,
+				pendingWrite{
+					r:    r,
+					c:    c,
+					val:  val,
+					prev: &prev,
+				},
+			)
+		}
+
+		return
+	}
+
+	rf.entries[rf.lastIndex] = prev
+	rf.lastIndex++
+}

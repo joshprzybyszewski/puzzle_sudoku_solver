@@ -42,17 +42,17 @@ func (w *worker) process(
 		return
 	}
 
-	rf := rowFilled{}
-	rf.fillSixteenRow(
+	f := newFiller()
+	f.fillRow(
 		&w.state,
 		r,
 		0, 0,
-		func(*model.Sixteen) bool { return true },
+		pendingWrite{},
 	)
 
 	cpy := w.state
-	for i := 0; i < rf.lastIndex; i++ {
-		if rf.entries[i](&w.state) {
+	for i := 0; i < f.lastIndex; i++ {
+		if f.entries[i].apply(&w.state) {
 			w.process(ctx)
 		}
 		w.state = cpy
@@ -196,17 +196,17 @@ func (w *workforce) sendWork(
 		return
 	}
 
-	rf := rowFilled{}
-	rf.fillSixteenCol(
+	f := newFiller()
+	f.fillCol(
 		&initial,
 		0, c,
 		0,
-		func(*model.Sixteen) bool { return true },
+		pendingWrite{},
 	)
 
 	cpy := initial
-	for i := 0; i < rf.lastIndex; i++ {
-		if rf.entries[i](&cpy) {
+	for i := 0; i < f.lastIndex; i++ {
+		if f.entries[i].apply(&cpy) {
 			w.work <- cpy
 		}
 		cpy = initial
