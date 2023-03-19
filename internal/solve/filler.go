@@ -39,11 +39,11 @@ func (rf *filler) fillRow(
 
 	for ; c < s.Size(); c++ {
 		if s.IsSet(r, c) {
-			hasPlaced |= valsToBits[s.Val(r, c)]
+			hasPlaced |= s.Val(r, c).bit()
 			continue
 		}
 		for val = 1; val <= value(s.Size()); val++ {
-			b = valsToBits[val]
+			b = val.bit()
 			if hasPlaced&b == b {
 				continue
 			}
@@ -83,7 +83,7 @@ func (rf *filler) fillCol(
 
 	for ; r < s.Size(); r++ {
 		if s.IsSet(r, c) {
-			hasPlaced |= valsToBits[s.Val(r, c)]
+			hasPlaced |= s.Val(r, c).bit()
 			continue
 		}
 		for val = 1; val <= value(s.Size()); val++ {

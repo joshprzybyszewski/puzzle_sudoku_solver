@@ -40,7 +40,7 @@ func NewPuzzleFromSixteen(
 }
 
 func (p *puzzle) Size() uint8 {
-	return uint8(len(p.grid))
+	return p.size
 }
 
 func (p *puzzle) IsSet(r, c uint8) bool {
@@ -253,45 +253,50 @@ func (p *puzzle) BestCol() uint8 {
 }
 
 func (p *puzzle) IsSolved() bool {
-	var seen, b uint16
-	// check each row that it has all the numbers
-	for r := uint8(0); r < p.Size(); r++ {
-		seen = 0
-		for c := range p.grid[r] {
+	var row, col, box, b bits
+	// check each row/col that it has all the numbers
+	var r, c uint8
+	for r = 0; r < p.Size(); r++ {
+		row = 0
+		col = 0
+		for c = 0; c < p.Size(); c++ {
 			if p.grid[r][c] == 0 {
 				return false
 			}
-			b = 1 << (p.grid[r][c] - 1)
-			if seen&b == b {
+			// check row
+			b = p.grid[r][c].bit()
+			if row&b == b {
 				return false
 			}
-			seen |= b
-		}
-	}
-
-	// check each col that it has all the numbers
-	for c := uint8(0); c < p.Size(); c++ {
-		seen = 0
-		for r := uint8(0); r < p.Size(); r++ {
-			b = 1 << (p.grid[r][c] - 1)
-			if seen&b == b {
+			row |= b
+			// Use the (r, c) vars, but invert the order to check col
+			b = p.grid[c][r].bit()
+			if col&b == b {
 				return false
 			}
-			seen |= b
+			col |= b
 		}
 	}
 
 	// check each box that it has all the numbers
-	for box := 0; box < len(p.grid[0]); box++ {
-		seen = 0
-		for r := 4 * (box / 4); r < 4*(box/4)+4; r++ {
-			for c := 4 * (box % 4); c < 4*(box%4)+4; c++ {
-				b = 1 << (p.grid[r][c] - 1)
-				if seen&b == b {
+	for bc := p.getBoxCoords(0, 0); ; {
+		box = 0
+		for r = bc.startR; r < bc.stopR; r++ {
+			for c = bc.startC; c < bc.stopC; c++ {
+				b = p.grid[r][c].bit()
+				if box&b == b {
+					// box has already seen it
 					return false
 				}
-				seen |= b
+				box |= b
 			}
+		}
+		if bc.stopC < p.Size() {
+			bc = p.getBoxCoords(bc.startR, bc.stopC)
+		} else if bc.stopR < p.Size() {
+			bc = p.getBoxCoords(bc.stopR, 0)
+		} else {
+			break
 		}
 	}
 
@@ -299,9 +304,9 @@ func (p *puzzle) IsSolved() bool {
 }
 
 func (p puzzle) String() string {
-	output := make([]byte, 0, len(p.grid)*len(p.grid[0])*2)
+	output := make([]byte, 0, p.Size()*p.Size()*2)
 
-	for r := range p.grid {
+	for r := uint8(0); r < p.Size(); r++ {
 		if r == 0 {
 			output = append(output, []byte(".-------.-------.-------.-------.\n")...)
 		} else if r%4 == 0 {
@@ -309,7 +314,7 @@ func (p puzzle) String() string {
 
 		}
 		output = append(output, '|')
-		for c := range p.grid[r] {
+		for c := uint8(0); c < p.Size(); c++ {
 			if p.grid[r][c] > 9 {
 				output = append(output, 'A'+byte(p.grid[r][c]-10))
 			} else if p.grid[r][c] > 0 {
@@ -324,9 +329,6 @@ func (p puzzle) String() string {
 			}
 		}
 
-		// for c := 0; c < 4; c++ {
-		// 	output = append(output, []byte(fmt.Sprintf(" %016b", p.cannots[r][c]))...)
-		// }
 		output = append(output, '\n')
 	}
 	output = append(output, []byte("'-------'-------'-------'-------'\n")...)
