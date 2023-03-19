@@ -1,5 +1,11 @@
 package solve
 
+type value uint8
+
+func (v value) bit() uint16 {
+	return valsToBits[v]
+}
+
 var (
 	valsToBits = [17]uint16{
 		0xFFFF, // ERROR
