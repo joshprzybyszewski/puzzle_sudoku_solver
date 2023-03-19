@@ -51,6 +51,5 @@ func Fetch16x16(
 		return [16][16]uint8{}, err
 	}
 
-	sud := smodel.NewSixteen(g.Task)
-	return sud.Grid(), nil
+	return smodel.NewSixteen(g.Task), nil
 }
