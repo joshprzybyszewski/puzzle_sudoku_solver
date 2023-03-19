@@ -1,6 +1,10 @@
 package solve
 
-import "github.com/joshprzybyszewski/puzzle_sudoku_solver/internal/model"
+import (
+	"fmt"
+
+	"github.com/joshprzybyszewski/puzzle_sudoku_solver/internal/model"
+)
 
 type puzzle struct {
 	grid [16][16]value
@@ -13,15 +17,80 @@ type puzzle struct {
 	size uint8
 }
 
+func NewPuzzleFromClassic(
+	input model.Classic,
+) puzzle {
+	puzz := puzzle{
+		size: uint8(len(input)),
+	}
+	fmt.Printf("puzz.Size() = %d\n", puzz.Size())
+
+	var allCannots bits
+	for i := value(puzz.Size() + 1); i <= 16; i++ {
+		allCannots |= i.bit()
+	}
+
+	for r := uint8(0); r < puzz.Size(); r++ {
+		for c := uint8(0); c < puzz.Size(); c++ {
+			puzz.cannots[r][c] = allCannots
+			puzz.remaining[r][c] = puzz.Size()
+		}
+		puzz.remainingRows[r] = puzz.Size()
+	}
+
+	for r := uint8(0); r < puzz.Size(); r++ {
+		for c := uint8(0); c < puzz.Size(); c++ {
+			if input[r][c] == 0 {
+				continue
+			}
+			puzz.InitialPlace(r, c, input[r][c])
+		}
+	}
+
+	return puzz
+}
+
+func NewPuzzleFromTwelve(
+	input model.Twelve,
+) puzzle {
+	puzz := puzzle{
+		size: uint8(len(input)),
+	}
+
+	var allCannots bits
+	for i := value(puzz.Size() + 1); i <= 16; i++ {
+		allCannots |= i.bit()
+	}
+
+	for r := uint8(0); r < puzz.Size(); r++ {
+		for c := uint8(0); c < puzz.Size(); c++ {
+			puzz.cannots[r][c] = allCannots
+			puzz.remaining[r][c] = puzz.Size()
+		}
+		puzz.remainingRows[r] = puzz.Size()
+	}
+
+	for r := uint8(0); r < puzz.Size(); r++ {
+		for c := uint8(0); c < puzz.Size(); c++ {
+			if input[r][c] == 0 {
+				continue
+			}
+			puzz.InitialPlace(r, c, input[r][c])
+		}
+	}
+
+	return puzz
+}
+
 func NewPuzzleFromSixteen(
 	input model.Sixteen,
 ) puzzle {
 	puzz := puzzle{
-		size: 16,
+		size: uint8(len(input)),
 	}
 
-	for r := range puzz.remaining {
-		for c := range puzz.remaining[r] {
+	for r := uint8(0); r < puzz.Size(); r++ {
+		for c := uint8(0); c < puzz.Size(); c++ {
 			puzz.remaining[r][c] = puzz.Size()
 		}
 		puzz.remainingRows[r] = puzz.Size()
@@ -181,8 +250,15 @@ func (p *puzzle) Place(r, c uint8, val value) bool {
 }
 
 func (p *puzzle) getBoxCoords(r, c uint8) boxCoords {
-	// TODO support other sizes
-	return sixteenBoxCoords[r][c]
+	switch p.size {
+	case 9:
+		return nineBoxCoords[r][c]
+	case 12:
+		return twelveBoxCoords[r][c]
+	case 16:
+		return sixteenBoxCoords[r][c]
+	}
+	return invalidBoxCoords
 }
 
 func (p *puzzle) BestRow() uint8 {
@@ -190,12 +266,12 @@ func (p *puzzle) BestRow() uint8 {
 	br := p.Size() + 1
 	b := -1
 
-	for r := range p.remaining {
+	for r := uint8(0); r < p.Size(); r++ {
 		if p.remainingRows[r] == 0 {
 			continue
 		}
 		cur = -1
-		for c := range p.remaining[r] {
+		for c := uint8(0); c < p.Size(); c++ {
 			if p.remaining[r][c] == 0 {
 				continue
 			}
@@ -225,9 +301,13 @@ func (p *puzzle) BestCol() uint8 {
 	bc := p.Size() + 1
 	b := -1
 
+	// for r := uint8(0); r < p.Size(); r++ {
 	for c := uint8(0); c < p.Size(); c++ {
+		// for c := uint8(0); c < p.Size(); c++ {
 		cur = -1
 		for r := uint8(0); r < p.Size(); r++ {
+			// for c := uint8(0); c < p.Size(); c++ {
+			// for r := uint8(0); r < p.Size(); r++ {
 			if p.remaining[r][c] == 0 {
 				continue
 			}
