@@ -192,9 +192,8 @@ func (w *workforce) sendWork(
 	if c > initial.Size() {
 		if initial.IsSolved() {
 			w.solution <- initial
-			return
 		}
-		panic(`what happened`)
+		return
 	}
 
 	rf := rowFilled{}

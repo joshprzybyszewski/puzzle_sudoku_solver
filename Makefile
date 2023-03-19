@@ -27,7 +27,7 @@ lint: ## Runs linters (via golangci-lint) on golang code
 
 .PHONY: build
 build: ## Executes go build to see what escapes to heap
-	go build -gcflags='-m -m' ./solve/...
+	go build -gcflags='-m -m' ./internal/solve/...
 
 
 .PHONY: results

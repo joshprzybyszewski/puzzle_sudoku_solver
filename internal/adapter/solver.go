@@ -33,7 +33,6 @@ func NewSolver(
 	if max > smodel.MaxIterator {
 		max = smodel.MaxIterator
 	}
-	min = max
 	if timeout < 0 {
 		timeout = 0
 	} else if timeout > maxTimeout {

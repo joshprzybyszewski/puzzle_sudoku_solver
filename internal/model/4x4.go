@@ -1,8 +1,6 @@
 package model
 
 import (
-	"fmt"
-
 	pmodel "github.com/joshprzybyszewski/puzzler/model"
 )
 
@@ -102,7 +100,7 @@ func (p *Sixteen) placeLast(r, c uint8) bool {
 	return p.Place(r, c, val)
 }
 
-func (p *Sixteen) Place(r, c, val uint8) (ret bool) {
+func (p *Sixteen) Place(r, c, val uint8) bool {
 	if p.grid[r][c] == val {
 		return true
 	}
@@ -113,10 +111,10 @@ func (p *Sixteen) Place(r, c, val uint8) (ret bool) {
 	}
 
 	if val > p.Size() || p.grid[r][c] != 0 {
-		fmt.Printf("r: %d\n", r)
-		fmt.Printf("c: %d\n", c)
-		fmt.Printf("val: %d\n", val)
-		fmt.Printf("%s\n", p)
+		// fmt.Printf("r: %d\n", r)
+		// fmt.Printf("c: %d\n", c)
+		// fmt.Printf("val: %d\n", val)
+		// fmt.Printf("%s\n", p)
 		panic(`dev error`)
 	}
 
@@ -124,6 +122,8 @@ func (p *Sixteen) Place(r, c, val uint8) (ret bool) {
 	// p.cannots[r][c] = 0xFFFF
 	p.remaining[r][c] = 0
 	p.remainingRows[r]--
+
+	shouldCheckLasts := false
 
 	// update this column (iterate through all the rows)
 	for r2 := uint8(0); r2 < p.Size(); r2++ {
@@ -137,11 +137,7 @@ func (p *Sixteen) Place(r, c, val uint8) (ret bool) {
 		p.cannots[r2][c] |= b
 
 		if p.remaining[r2][c] == 1 {
-			defer func(r, c uint8) {
-				if ret {
-					ret = p.placeLast(r, c)
-				}
-			}(r2, c)
+			shouldCheckLasts = true
 		}
 	}
 
@@ -157,11 +153,7 @@ func (p *Sixteen) Place(r, c, val uint8) (ret bool) {
 		p.cannots[r][c2] |= b
 
 		if p.remaining[r][c2] == 1 {
-			defer func(r, c uint8) {
-				if ret {
-					ret = p.placeLast(r, c)
-				}
-			}(r, c2)
+			shouldCheckLasts = true
 		}
 	}
 
@@ -185,11 +177,23 @@ func (p *Sixteen) Place(r, c, val uint8) (ret bool) {
 			p.cannots[r2][c2] |= b
 
 			if p.remaining[r2][c2] == 1 {
-				defer func(r, c uint8) {
-					if ret {
-						ret = p.placeLast(r, c)
-					}
-				}(r2, c2)
+				shouldCheckLasts = true
+			}
+		}
+	}
+
+	if !shouldCheckLasts {
+		return true
+	}
+
+	for r := uint8(0); r < p.Size(); r++ {
+		for c := uint8(0); c < p.Size(); c++ {
+			if p.remaining[r][c] != 1 {
+				continue
+			}
+
+			if !p.placeLast(r, c) {
+				return false
 			}
 		}
 	}
