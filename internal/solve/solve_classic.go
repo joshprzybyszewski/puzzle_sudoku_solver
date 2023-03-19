@@ -8,12 +8,16 @@ import (
 
 func Classic(
 	ctx context.Context,
-	s model.Classic,
+	input model.Classic,
 ) (model.Classic, error) {
+	s := make([][]uint8, len(input))
+	for r := range input {
+		s[r] = input[r][:]
+	}
 
 	wf := newWorkforce()
 	wf.start(ctx)
-	output, err := wf.solve(ctx, NewPuzzleFromClassic(s))
+	output, err := wf.solve(ctx, NewPuzzle(s))
 	wf.stop()
 	if err != nil {
 		return model.Classic{}, err

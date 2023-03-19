@@ -1,11 +1,5 @@
 package solve
 
-import (
-	"fmt"
-
-	"github.com/joshprzybyszewski/puzzle_sudoku_solver/internal/model"
-)
-
 type puzzle struct {
 	grid [16][16]value
 
@@ -17,41 +11,8 @@ type puzzle struct {
 	size uint8
 }
 
-func NewPuzzleFromClassic(
-	input model.Classic,
-) puzzle {
-	puzz := puzzle{
-		size: uint8(len(input)),
-	}
-	fmt.Printf("puzz.Size() = %d\n", puzz.Size())
-
-	var allCannots bits
-	for i := value(puzz.Size() + 1); i <= 16; i++ {
-		allCannots |= i.bit()
-	}
-
-	for r := uint8(0); r < puzz.Size(); r++ {
-		for c := uint8(0); c < puzz.Size(); c++ {
-			puzz.cannots[r][c] = allCannots
-			puzz.remaining[r][c] = puzz.Size()
-		}
-		puzz.remainingRows[r] = puzz.Size()
-	}
-
-	for r := uint8(0); r < puzz.Size(); r++ {
-		for c := uint8(0); c < puzz.Size(); c++ {
-			if input[r][c] == 0 {
-				continue
-			}
-			puzz.InitialPlace(r, c, input[r][c])
-		}
-	}
-
-	return puzz
-}
-
-func NewPuzzleFromTwelve(
-	input model.Twelve,
+func NewPuzzle(
+	input [][]uint8,
 ) puzzle {
 	puzz := puzzle{
 		size: uint8(len(input)),
@@ -65,32 +26,6 @@ func NewPuzzleFromTwelve(
 	for r := uint8(0); r < puzz.Size(); r++ {
 		for c := uint8(0); c < puzz.Size(); c++ {
 			puzz.cannots[r][c] = allCannots
-			puzz.remaining[r][c] = puzz.Size()
-		}
-		puzz.remainingRows[r] = puzz.Size()
-	}
-
-	for r := uint8(0); r < puzz.Size(); r++ {
-		for c := uint8(0); c < puzz.Size(); c++ {
-			if input[r][c] == 0 {
-				continue
-			}
-			puzz.InitialPlace(r, c, input[r][c])
-		}
-	}
-
-	return puzz
-}
-
-func NewPuzzleFromSixteen(
-	input model.Sixteen,
-) puzzle {
-	puzz := puzzle{
-		size: uint8(len(input)),
-	}
-
-	for r := uint8(0); r < puzz.Size(); r++ {
-		for c := uint8(0); c < puzz.Size(); c++ {
 			puzz.remaining[r][c] = puzz.Size()
 		}
 		puzz.remainingRows[r] = puzz.Size()

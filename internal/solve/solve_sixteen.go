@@ -8,12 +8,16 @@ import (
 
 func Sixteen(
 	ctx context.Context,
-	s model.Sixteen,
+	input model.Sixteen,
 ) (model.Sixteen, error) {
+	s := make([][]uint8, len(input))
+	for r := range input {
+		s[r] = input[r][:]
+	}
 
 	wf := newWorkforce()
 	wf.start(ctx)
-	output, err := wf.solve(ctx, NewPuzzleFromSixteen(s))
+	output, err := wf.solve(ctx, NewPuzzle(s))
 	wf.stop()
 	if err != nil {
 		return model.Sixteen{}, err

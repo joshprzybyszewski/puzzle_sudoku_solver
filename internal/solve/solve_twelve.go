@@ -8,11 +8,16 @@ import (
 
 func Twelve(
 	ctx context.Context,
-	s model.Twelve,
+	input model.Twelve,
 ) (model.Twelve, error) {
+	s := make([][]uint8, len(input))
+	for r := range input {
+		s[r] = input[r][:]
+	}
+
 	wf := newWorkforce()
 	wf.start(ctx)
-	output, err := wf.solve(ctx, NewPuzzleFromTwelve(s))
+	output, err := wf.solve(ctx, NewPuzzle(s))
 	wf.stop()
 	if err != nil {
 		return model.Twelve{}, err
