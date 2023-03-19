@@ -95,7 +95,7 @@ func (p *puzzle) Place(r, c uint8, val value) bool {
 	}
 
 	p.grid[r][c] = val
-	// p.cannots[r][c] = 0xFFFF
+	p.cannots[r][c] = 0xFFFF
 	p.remaining[r][c] = 0
 	p.remainingRows[r]--
 
@@ -103,10 +103,12 @@ func (p *puzzle) Place(r, c uint8, val value) bool {
 
 	// update this column (iterate through all the rows)
 	for r2 := uint8(0); r2 < p.Size(); r2++ {
-		if r2 == r || p.remaining[r2][c] == 0 || p.cannots[r2][c]&b == b {
+		if r2 == r || p.cannots[r2][c]&b == b {
 			continue
 		}
 		if p.remaining[r2][c] == 1 {
+			// This removes the last option for this cell.
+			// Impossible.
 			return false
 		}
 		p.remaining[r2][c]--
@@ -119,10 +121,12 @@ func (p *puzzle) Place(r, c uint8, val value) bool {
 
 	// update this row (iterate through all the cols)
 	for c2 := uint8(0); c2 < p.Size(); c2++ {
-		if c2 == c || p.remaining[r][c2] == 0 || p.cannots[r][c2]&b == b {
+		if c2 == c || p.cannots[r][c2]&b == b {
 			continue
 		}
 		if p.remaining[r][c2] == 1 {
+			// This removes the last option for this cell.
+			// Impossible.
 			return false
 		}
 		p.remaining[r][c2]--
@@ -134,19 +138,18 @@ func (p *puzzle) Place(r, c uint8, val value) bool {
 	}
 
 	// update this box (iterate through the 16 nearby)
-	startR := 4 * (r / 4)
-	stopR := startR + 4
-	startC := 4 * (c / 4)
-	stopC := startC + 4
-	for r2 := startR; r2 < stopR; r2++ {
-		for c2 := startC; c2 < stopC; c2++ {
+	bc := p.getBoxCoords(r, c)
+	for r2 := bc.startR; r2 < bc.stopR; r2++ {
+		for c2 := bc.startC; c2 < bc.stopC; c2++ {
 			if r2 == r && c2 == c {
 				continue
 			}
-			if p.remaining[r2][c2] == 0 || p.cannots[r2][c2]&b == b {
+			if p.cannots[r2][c2]&b == b {
 				continue
 			}
 			if p.remaining[r2][c2] == 1 {
+				// This removes the last option for this cell.
+				// Impossible.
 				return false
 			}
 			p.remaining[r2][c2]--
@@ -175,6 +178,11 @@ func (p *puzzle) Place(r, c uint8, val value) bool {
 	}
 
 	return true
+}
+
+func (p *puzzle) getBoxCoords(r, c uint8) boxCoords {
+	// TODO support other sizes
+	return sixteenBoxCoords[r][c]
 }
 
 func (p *puzzle) BestRow() uint8 {
