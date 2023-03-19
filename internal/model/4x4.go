@@ -198,46 +198,38 @@ func (p *Sixteen) Place(r, c, val uint8) (ret bool) {
 }
 
 func (p *Sixteen) BestRow() uint8 {
-	r := p.Size() + 1
+	var cur int
 	br := p.Size() + 1
-	for other := uint8(0); other < p.Size(); other++ {
-		if p.remainingRows[other] == 1 {
-			return other
-		}
-		if p.remainingRows[other] > 0 && p.remainingRows[other] < br {
-			br = p.remainingRows[other]
-			r = other
-		}
-	}
-	return r
-}
+	b := -1
 
-func (p *Sixteen) Best() (uint8, uint8) {
-	r := p.BestRow()
-	if r > p.Size() {
-		// did not find!
-		return r, p.Size() + 1
-	}
-
-	b := p.Size() + 1
-	var c uint8
-
-	for j := range p.remaining[r] {
-		if p.remaining[r][j] == 1 {
-			return r, uint8(j)
+	for r := range p.remaining {
+		if p.remainingRows[r] == 0 {
+			continue
 		}
-		if p.remaining[r][j] > 0 && p.remaining[r][j] < b {
-			b = p.remaining[r][j]
-			c = uint8(j)
+		cur = -1
+		for c := range p.remaining[r] {
+			if p.remaining[r][c] == 0 {
+				continue
+			}
+			if cur == -1 {
+				cur = int(p.remaining[r][c])
+			} else {
+				cur *= int(p.remaining[r][c])
+			}
+			if b > 0 && cur > b {
+				break
+			}
+		}
+		if cur < 0 {
+			continue
+		}
+		if b < 0 || cur < b {
+			b = cur
+			br = uint8(r)
 		}
 	}
 
-	if b > p.Size() {
-		// did not find!
-		return p.Size() + 1, p.Size() + 1
-	}
-
-	return r, c
+	return br
 }
 
 func (p *Sixteen) IsSolved() bool {
