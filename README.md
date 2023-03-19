@@ -19,18 +19,18 @@ _GOARCH: amd64_
 
 _cpu: Intel(R) Core(TM) i5-3570 CPU @ 3.40GHz_
 
-_Solve timeout: 10s_
+_Solve timeout: 2s_
 
 |Puzzle|Min|p25|Median|p75|p95|max|sample size|
 |-|-|-|-|-|-|-|-:|
-|3x3 basic|65.99µs|589.56µs|1.54ms|3.9ms|4.74ms|5.39ms|28|
-|3x3 easy|61.7µs|83.71µs|98.95µs|1.65ms|4.34ms|5.19ms|27|
-|3x3 intermediate|394.24µs|1.53ms|3.39ms|4.1ms|5.03ms|8.79ms|27|
-|3x3 advanced|276µs|1.71ms|3.46ms|4.81ms|7.83ms|9.49ms|27|
-|3x3 extreme|70.95µs|582.94µs|1.24ms|3.62ms|5.58ms|11.42ms|26|
-|3x3 evil|816.26µs|1.74ms|3.88ms|5ms|6.91ms|7.66ms|25|
-|3x4 advanced|3.24ms|5.58ms|8.21ms|12.06ms|38.94ms|38.94ms|20|
-|4x4 advanced|11.99ms|75.51ms|252.53ms|757.43ms|10s|10.01s|129|
+|3x3 basic|102.69µs|631.26µs|1.31ms|3.36ms|4.42ms|4.7ms|33|
+|3x3 easy|84.71µs|129.16µs|175.82µs|1.59ms|3.51ms|3.89ms|32|
+|3x3 intermediate|589.9µs|1.47ms|3.44ms|4.35ms|5.68ms|8.89ms|32|
+|3x3 advanced|490.8µs|1.93ms|3.5ms|4.39ms|5.3ms|6.27ms|32|
+|3x3 extreme|137.95µs|683.23µs|1.62ms|4.4ms|6.34ms|8.05ms|31|
+|3x3 evil|453.1µs|1.87ms|3.31ms|4.87ms|5.98ms|6.11ms|35|
+|3x4 advanced|4.22ms|5.36ms|6.48ms|9.28ms|12.02ms|19.74ms|28|
+|4x4 advanced|11.61ms|40.13ms|96.85ms|338.15ms|2s|2.02s|139|
 
-_Last Updated: 19 Mar 23 15:56 CDT_
+_Last Updated: 19 Mar 23 17:12 CDT_
 </resultsMarker>

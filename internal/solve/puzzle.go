@@ -65,9 +65,9 @@ func (p *puzzle) InitialPlace(r, c, val uint8) {
 	}
 }
 
-func (p *puzzle) placeLast(r, c uint8) bool {
+func (p *puzzle) placeLast(r, c uint8) (bits, bool) {
 	if p.grid[r][c] != 0 {
-		return true
+		return 0, true
 	}
 	if p.remaining[r][c] != 1 {
 		panic(`dev error`)
@@ -77,17 +77,44 @@ func (p *puzzle) placeLast(r, c uint8) bool {
 		val++
 	}
 
-	return p.Place(r, c, val)
+	return p.place(r, c, val)
 }
 
 func (p *puzzle) Place(r, c uint8, val value) bool {
-	if p.grid[r][c] == val {
+	placed, ok := p.place(r, c, val)
+	if !ok {
+		return false
+	}
+	if placed == 0 {
 		return true
+	}
+
+	for v := value(1); v <= value(p.Size()); v++ {
+		if placed&(v.bit()) == 0 {
+			continue
+		}
+
+		if !p.validate(v) {
+			return false
+		}
+
+		placed ^= v.bit()
+		if placed == 0 {
+			break
+		}
+	}
+
+	return true
+}
+
+func (p *puzzle) place(r, c uint8, val value) (bits, bool) {
+	if p.grid[r][c] == val {
+		return 0, true
 	}
 
 	b := val.bit()
 	if p.cannots[r][c]&b == b {
-		return false
+		return 0, false
 	}
 
 	if val > value(p.Size()) || p.grid[r][c] != 0 {
@@ -99,7 +126,7 @@ func (p *puzzle) Place(r, c uint8, val value) bool {
 	}
 
 	p.grid[r][c] = val
-	p.cannots[r][c] = 0xFFFF
+	p.cannots[r][c] = allBits
 	p.remaining[r][c] = 0
 	p.remainingRows[r]--
 
@@ -113,7 +140,8 @@ func (p *puzzle) Place(r, c uint8, val value) bool {
 		if p.remaining[r2][c] == 1 {
 			// This removes the last option for this cell.
 			// Impossible.
-			return false
+			return 0, false
+
 		}
 		p.remaining[r2][c]--
 		p.cannots[r2][c] |= b
@@ -131,7 +159,8 @@ func (p *puzzle) Place(r, c uint8, val value) bool {
 		if p.remaining[r][c2] == 1 {
 			// This removes the last option for this cell.
 			// Impossible.
-			return false
+			return 0, false
+
 		}
 		p.remaining[r][c2]--
 		p.cannots[r][c2] |= b
@@ -154,7 +183,8 @@ func (p *puzzle) Place(r, c uint8, val value) bool {
 			if p.remaining[r2][c2] == 1 {
 				// This removes the last option for this cell.
 				// Impossible.
-				return false
+				return 0, false
+
 			}
 			p.remaining[r2][c2]--
 			p.cannots[r2][c2] |= b
@@ -165,19 +195,115 @@ func (p *puzzle) Place(r, c uint8, val value) bool {
 		}
 	}
 
-	if !shouldCheckLasts {
-		return true
+	out := val.bit()
+	if shouldCheckLasts {
+		placed, success := p.checkAllForLast()
+		if !success {
+			return 0, false
+		}
+		out |= placed
 	}
 
+	return out, true
+}
+
+func (p *puzzle) checkAllForLast() (bits, bool) {
+	var c uint8
+	var placed, tmp bits
+	var success bool
+
 	for r := uint8(0); r < p.Size(); r++ {
-		for c := uint8(0); c < p.Size(); c++ {
+		for c = uint8(0); c < p.Size(); c++ {
 			if p.remaining[r][c] != 1 {
 				continue
 			}
 
-			if !p.placeLast(r, c) {
-				return false
+			tmp, success = p.placeLast(r, c)
+			if !success {
+				return 0, false
 			}
+			placed |= tmp
+		}
+	}
+
+	return placed, true
+}
+
+func (p *puzzle) validate(
+	v value,
+) bool {
+	b := v.bit()
+
+	var canRow, canCol bool
+	var r, c uint8
+
+	// Check that each row and each col has at least one possible cell left for placing this value
+	for r = 0; r < p.Size(); r++ {
+		canRow, canCol = false, false
+		for c = 0; c < p.Size(); c++ {
+			// check row
+			if p.grid[r][c] != 0 {
+				if p.grid[r][c] == v {
+					canRow = true
+					if canCol {
+						break
+					}
+				}
+			} else if p.cannots[r][c]&b == 0 {
+				canRow = true
+				if canCol {
+					break
+				}
+			}
+			// Use the (r, c) vars, but invert the order to check col
+			if p.grid[c][r] != 0 {
+				if p.grid[c][r] == v {
+					canCol = true
+					if canRow {
+						break
+					}
+				}
+			} else if p.cannots[c][r]&b == 0 {
+				canCol = true
+				if canRow {
+					break
+				}
+			}
+		}
+		if !canRow || !canCol {
+			return false
+		}
+	}
+
+	var canBox bool
+	// check each box has at least one possible cell left to place this number
+	for bc := p.getBoxCoords(0, 0); ; {
+		canBox = false
+		for r = bc.startR; r < bc.stopR; r++ {
+			for c = bc.startC; c < bc.stopC; c++ {
+				if p.grid[r][c] != 0 {
+					if p.grid[r][c] == v {
+						canBox = true
+						break
+					}
+				} else if p.cannots[r][c]&b == 0 {
+					canBox = true
+					break
+				}
+			}
+			if canBox {
+				break
+			}
+		}
+		if !canBox {
+			return false
+		}
+		if bc.stopC < p.Size() {
+			bc = p.getBoxCoords(bc.startR, bc.stopC)
+		} else if bc.stopR < p.Size() {
+			bc = p.getBoxCoords(bc.stopR, 0)
+		} else {
+			break
 		}
 	}
 
@@ -236,13 +362,9 @@ func (p *puzzle) BestCol() uint8 {
 	bc := p.Size() + 1
 	b := -1
 
-	// for r := uint8(0); r < p.Size(); r++ {
 	for c := uint8(0); c < p.Size(); c++ {
-		// for c := uint8(0); c < p.Size(); c++ {
 		cur = -1
 		for r := uint8(0); r < p.Size(); r++ {
-			// for c := uint8(0); c < p.Size(); c++ {
-			// for r := uint8(0); r < p.Size(); r++ {
 			if p.remaining[r][c] == 0 {
 				continue
 			}

@@ -37,7 +37,7 @@ func main() {
 			adapter.NewSolver(
 				model.MinIterator,
 				model.MaxIterator,
-				10*time.Second,
+				2*time.Second,
 			),
 		)
 		return
