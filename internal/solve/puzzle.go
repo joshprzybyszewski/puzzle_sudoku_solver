@@ -89,7 +89,15 @@ func (p *puzzle) Place(r, c uint8, val value) bool {
 		return false
 	}
 
+	for p.hasEasy {
+		p.hasEasy = false
+		if !p.checkAllForLast() {
+			return false
+		}
+	}
+
 	placed := p.recentlyPlaced
+	p.recentlyPlaced = 0
 
 	for v := value(1); v <= value(p.Size()); v++ {
 		if placed&(v.bit()) == 0 {
@@ -154,10 +162,6 @@ func (p *puzzle) place(r, c uint8, val value) bool {
 				return false
 			}
 		}
-	}
-
-	if p.hasEasy && !p.checkAllForLast() {
-		return false
 	}
 
 	p.recentlyPlaced |= b
