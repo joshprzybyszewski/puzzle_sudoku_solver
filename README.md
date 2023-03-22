@@ -23,14 +23,14 @@ _Solve timeout: 2s_
 
 |Puzzle|Min|p25|Median|p75|p95|max|sample size|
 |-|-|-|-|-|-|-|-:|
-|3x3 basic|90.77µs|681.26µs|1.96ms|4.18ms|5.09ms|5.64ms|94|
-|3x3 easy|82.64µs|145.77µs|184.37µs|1.71ms|4.71ms|5.21ms|93|
-|3x3 intermediate|500.11µs|1.9ms|3.62ms|4.62ms|5.61ms|9.11ms|93|
-|3x3 advanced|178.73µs|1.86ms|3.61ms|4.72ms|5.53ms|9.48ms|93|
-|3x3 extreme|128.5µs|734.12µs|1.81ms|4.56ms|5.48ms|9.5ms|92|
-|3x3 evil|635.71µs|2.29ms|3.91ms|4.94ms|6.7ms|9.08ms|95|
-|3x4 advanced|1.96ms|5.57ms|6.71ms|9.76ms|12.48ms|19.64ms|88|
-|4x4 advanced|12.87ms|39.03ms|80.31ms|242.45ms|2s|2.01s|139|
+|3x3 basic|86.71µs|573.16µs|1.68ms|3.83ms|4.82ms|7.32ms|97|
+|3x3 easy|89.33µs|135.03µs|173.2µs|1.67ms|4.47ms|4.77ms|96|
+|3x3 intermediate|519.68µs|1.58ms|2.9ms|4.16ms|5.32ms|8.42ms|96|
+|3x3 advanced|102.91µs|1.57ms|3.31ms|4.41ms|5.96ms|9.29ms|96|
+|3x3 extreme|92.94µs|716.05µs|1.84ms|4.24ms|6.02ms|8.06ms|95|
+|3x3 evil|157.33µs|2ms|3.74ms|4.75ms|6.58ms|10.06ms|98|
+|3x4 advanced|2.93ms|5.49ms|6.79ms|10.21ms|13.51ms|28ms|91|
+|4x4 advanced|12.87ms|39.06ms|90.94ms|232.02ms|2s|2.01s|142|
 
-_Last Updated: 19 Mar 23 17:45 CDT_
+_Last Updated: 22 Mar 23 06:36 CDT_
 </resultsMarker>
