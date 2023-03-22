@@ -9,6 +9,9 @@ type puzzle struct {
 	remainingRows [16]uint8
 
 	size uint8
+
+	recentlyPlaced bits
+	hasEasy        bool
 }
 
 func NewPuzzle(
@@ -130,43 +133,14 @@ func (p *puzzle) place(r, c uint8, val value) (bits, bool) {
 	p.remaining[r][c] = 0
 	p.remainingRows[r]--
 
-	shouldCheckLasts := false
-
-	// update this column (iterate through all the rows)
-	for r2 := uint8(0); r2 < p.Size(); r2++ {
-		if r2 == r || p.cannots[r2][c]&b == b {
-			continue
-		}
-		if p.remaining[r2][c] == 1 {
-			// This removes the last option for this cell.
-			// Impossible.
+	for other := uint8(0); other < p.Size(); other++ {
+		// update this column (iterate through all the rows)
+		if other != r && !p.removeOption(other, c, b) {
 			return 0, false
-
 		}
-		p.remaining[r2][c]--
-		p.cannots[r2][c] |= b
-
-		if p.remaining[r2][c] == 1 {
-			shouldCheckLasts = true
-		}
-	}
-
-	// update this row (iterate through all the cols)
-	for c2 := uint8(0); c2 < p.Size(); c2++ {
-		if c2 == c || p.cannots[r][c2]&b == b {
-			continue
-		}
-		if p.remaining[r][c2] == 1 {
-			// This removes the last option for this cell.
-			// Impossible.
+		// update this row (iterate through all the cols)
+		if other != c && !p.removeOption(r, other, b) {
 			return 0, false
-
-		}
-		p.remaining[r][c2]--
-		p.cannots[r][c2] |= b
-
-		if p.remaining[r][c2] == 1 {
-			shouldCheckLasts = true
 		}
 	}
 
@@ -177,26 +151,14 @@ func (p *puzzle) place(r, c uint8, val value) (bits, bool) {
 			if r2 == r && c2 == c {
 				continue
 			}
-			if p.cannots[r2][c2]&b == b {
-				continue
-			}
-			if p.remaining[r2][c2] == 1 {
-				// This removes the last option for this cell.
-				// Impossible.
+			if !p.removeOption(r2, c2, b) {
 				return 0, false
-
-			}
-			p.remaining[r2][c2]--
-			p.cannots[r2][c2] |= b
-
-			if p.remaining[r2][c2] == 1 {
-				shouldCheckLasts = true
 			}
 		}
 	}
 
 	out := val.bit()
-	if shouldCheckLasts {
+	if p.hasEasy {
 		placed, success := p.checkAllForLast()
 		if !success {
 			return 0, false
@@ -205,6 +167,26 @@ func (p *puzzle) place(r, c uint8, val value) (bits, bool) {
 	}
 
 	return out, true
+}
+
+func (p *puzzle) removeOption(r, c uint8, b bits) bool {
+	if p.cannots[r][c]&b == b {
+		return true
+	}
+	if p.remaining[r][c] == 1 {
+		// This removes the last option for this cell.
+		// Impossible.
+		return false
+
+	}
+	p.remaining[r][c]--
+	p.cannots[r][c] |= b
+
+	if p.remaining[r][c] == 1 {
+		p.hasEasy = true
+	}
+
+	return true
 }
 
 func (p *puzzle) checkAllForLast() (bits, bool) {
