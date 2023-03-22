@@ -68,9 +68,9 @@ func (p *puzzle) InitialPlace(r, c, val uint8) {
 	}
 }
 
-func (p *puzzle) placeLast(r, c uint8) (bits, bool) {
+func (p *puzzle) placeLast(r, c uint8) bool {
 	if p.grid[r][c] != 0 {
-		return 0, true
+		return true
 	}
 	if p.remaining[r][c] != 1 {
 		panic(`dev error`)
@@ -84,13 +84,12 @@ func (p *puzzle) placeLast(r, c uint8) (bits, bool) {
 }
 
 func (p *puzzle) Place(r, c uint8, val value) bool {
-	placed, ok := p.place(r, c, val)
+	ok := p.place(r, c, val)
 	if !ok {
 		return false
 	}
-	if placed == 0 {
-		return true
-	}
+
+	placed := p.recentlyPlaced
 
 	for v := value(1); v <= value(p.Size()); v++ {
 		if placed&(v.bit()) == 0 {
@@ -110,14 +109,14 @@ func (p *puzzle) Place(r, c uint8, val value) bool {
 	return true
 }
 
-func (p *puzzle) place(r, c uint8, val value) (bits, bool) {
+func (p *puzzle) place(r, c uint8, val value) bool {
 	if p.grid[r][c] == val {
-		return 0, true
+		return true
 	}
 
 	b := val.bit()
 	if p.cannots[r][c]&b == b {
-		return 0, false
+		return false
 	}
 
 	if val > value(p.Size()) || p.grid[r][c] != 0 {
@@ -136,11 +135,11 @@ func (p *puzzle) place(r, c uint8, val value) (bits, bool) {
 	for other := uint8(0); other < p.Size(); other++ {
 		// update this column (iterate through all the rows)
 		if other != r && !p.removeOption(other, c, b) {
-			return 0, false
+			return false
 		}
 		// update this row (iterate through all the cols)
 		if other != c && !p.removeOption(r, other, b) {
-			return 0, false
+			return false
 		}
 	}
 
@@ -152,21 +151,17 @@ func (p *puzzle) place(r, c uint8, val value) (bits, bool) {
 				continue
 			}
 			if !p.removeOption(r2, c2, b) {
-				return 0, false
+				return false
 			}
 		}
 	}
 
-	out := val.bit()
-	if p.hasEasy {
-		placed, success := p.checkAllForLast()
-		if !success {
-			return 0, false
-		}
-		out |= placed
+	if p.hasEasy && !p.checkAllForLast() {
+		return false
 	}
 
-	return out, true
+	p.recentlyPlaced |= b
+	return true
 }
 
 func (p *puzzle) removeOption(r, c uint8, b bits) bool {
@@ -189,10 +184,8 @@ func (p *puzzle) removeOption(r, c uint8, b bits) bool {
 	return true
 }
 
-func (p *puzzle) checkAllForLast() (bits, bool) {
+func (p *puzzle) checkAllForLast() bool {
 	var c uint8
-	var placed, tmp bits
-	var success bool
 
 	for r := uint8(0); r < p.Size(); r++ {
 		for c = uint8(0); c < p.Size(); c++ {
@@ -200,15 +193,13 @@ func (p *puzzle) checkAllForLast() (bits, bool) {
 				continue
 			}
 
-			tmp, success = p.placeLast(r, c)
-			if !success {
-				return 0, false
+			if !p.placeLast(r, c) {
+				return false
 			}
-			placed |= tmp
 		}
 	}
 
-	return placed, true
+	return true
 }
 
 func (p *puzzle) validate(
