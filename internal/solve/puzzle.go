@@ -98,23 +98,27 @@ func (p *puzzle) Place(r, c uint8, val value) bool {
 		if !p.checkAllForLast() {
 			return false
 		}
-	}
 
-	placed := p.recentlyPlaced
-	p.recentlyPlaced = 0
+		placed := p.recentlyPlaced
+		p.recentlyPlaced = 0
 
-	for v := value(1); v <= value(p.Size()); v++ {
-		if placed&(v.bit()) == 0 {
-			continue
-		}
+		for v := value(1); v <= value(p.Size()); v++ {
+			if placed&(v.bit()) == 0 {
+				continue
+			}
 
-		if !p.validate(v) {
-			return false
-		}
+			if !p.checkBoxEliminations(val) {
+				return false
+			}
 
-		placed ^= v.bit()
-		if placed == 0 {
-			break
+			if !p.validate(v) {
+				return false
+			}
+
+			placed ^= v.bit()
+			if placed == 0 {
+				break
+			}
 		}
 	}
 
@@ -201,6 +205,97 @@ func (p *puzzle) checkAllForLast() bool {
 
 			if !p.placeLast(r, c) {
 				return false
+			}
+		}
+	}
+
+	return true
+}
+
+func (p *puzzle) checkBoxEliminations(
+	v value,
+) bool {
+	b := v.bit()
+
+	var r, c uint8
+	var r2, c2 uint8
+
+	var hasBox bool
+	var bc, bc2 boxCoords
+
+	for r = 0; r < p.Size(); r++ {
+		if p.placedRows[r]&b != 0 {
+			continue
+		}
+		hasBox = false
+		for c = 0; c < p.Size(); c++ {
+			if p.cannots[r][c]&b != 0 {
+				// cannot play it here
+				continue
+			}
+
+			bc2 = p.getBoxCoords(r, c)
+			if !hasBox {
+				bc = bc2
+				hasBox = true
+			} else if bc != bc2 {
+				bc = boxCoords{}
+				break
+			}
+		}
+		if !hasBox {
+			continue
+		}
+
+		// we know that the box defined as bc must contain v
+		// in row r. eliminate the rest.
+		for r2 = bc.startR; r2 < bc.stopR; r2++ {
+			if r == r2 {
+				continue
+			}
+			for c2 = bc.startC; c2 < bc.stopC; c2++ {
+				if !p.removeOption(r2, c2, b) {
+					return false
+				}
+			}
+		}
+	}
+
+	for c = 0; c < p.Size(); c++ {
+		if p.placedCols[c]&b != 0 {
+			continue
+		}
+		hasBox = false
+		for r = 0; r < p.Size(); r++ {
+			if p.cannots[r][c]&b != 0 {
+				// cannot play it here
+				continue
+			}
+
+			bc2 = p.getBoxCoords(r, c)
+			if !hasBox {
+				bc = bc2
+				hasBox = true
+			} else if bc != bc2 {
+				bc = boxCoords{}
+				break
+			}
+		}
+		if !hasBox {
+			continue
+		}
+
+		// we know that the box defined as bc must contain v
+		// in row r. eliminate the rest.
+		for c2 = bc.startC; c2 < bc.stopC; c2++ {
+			if c == c2 {
+				continue
+			}
+			for r2 = bc.startR; r2 < bc.stopR; r2++ {
+
+				if !p.removeOption(r2, c2, b) {
+					return false
+				}
 			}
 		}
 	}
