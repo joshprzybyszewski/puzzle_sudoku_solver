@@ -336,29 +336,46 @@ func (p *puzzle) validate(
 	b := v.bit()
 
 	var r, c uint8
+	var lastR, lastC uint8
 
 	var canBox bool
 	// check each box has at least one possible cell left to place this number
 	for bc := p.getBoxCoords(0, 0); ; {
 		canBox = false
+		lastR = p.Size()
+		lastC = p.Size()
 		for r = bc.startR; r < bc.stopR; r++ {
 			for c = bc.startC; c < bc.stopC; c++ {
 				if p.grid[r][c] != 0 {
 					if p.grid[r][c] == v {
 						canBox = true
+						lastR = p.Size() + 1
+						lastC = p.Size() + 1
 						break
 					}
 				} else if p.cannots[r][c]&b == 0 {
+					if canBox {
+						lastR = p.Size() + 1
+						lastC = p.Size() + 1
+						break
+					}
 					canBox = true
-					break
+					lastR = r
+					lastC = c
+					continue
 				}
 			}
-			if canBox {
+			if lastR > p.Size() {
 				break
 			}
 		}
 		if !canBox {
 			return false
+		}
+		if lastR < p.Size() {
+			if !p.place(lastR, lastC, v) {
+				return false
+			}
 		}
 		if bc.stopC < p.Size() {
 			bc = p.getBoxCoords(bc.startR, bc.stopC)
