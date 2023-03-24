@@ -70,7 +70,14 @@ func (s solver) Solve(g *model.Game) error {
 }
 
 func (s solver) Pretty(g model.Game) string {
-	return `TODO`
+	// if r, c := smodel.Iterator(g.Iterator).GetSize(); c == 4 {
+	// 	if r == 3 {
+	// 		return string(g.Answer)
+	// 	}
+	// 	return string(g.Answer)
+	// }
+
+	return string(g.ID) + `: ` + string(g.Answer)
 }
 
 func (s solver) IteratorString(i model.Iterator) model.IteratorString {
