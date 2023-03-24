@@ -244,7 +244,7 @@ func (p *puzzle) checkBoxEliminations(
 			}
 		}
 		if !hasBox {
-			continue
+			return false
 		}
 
 		// we know that the box defined as bc must contain v
@@ -282,7 +282,7 @@ func (p *puzzle) checkBoxEliminations(
 			}
 		}
 		if !hasBox {
-			continue
+			return false
 		}
 
 		// we know that the box defined as bc must contain v
@@ -308,35 +308,7 @@ func (p *puzzle) validate(
 ) bool {
 	b := v.bit()
 
-	var canRow, canCol bool
 	var r, c uint8
-
-	// Check that each row and each col has at least one possible cell left for placing this value
-	for r = 0; r < p.Size(); r++ {
-		canRow, canCol = p.placedRows[r]&b != 0, p.placedCols[r]&b != 0
-		if canRow && canCol {
-			continue
-		}
-		for c = 0; c < p.Size(); c++ {
-			// check row
-			if p.cannots[r][c]&b == 0 {
-				canRow = true
-				if canCol {
-					break
-				}
-			}
-			// Use the (r, c) vars, but invert the order to check col
-			if p.cannots[c][r]&b == 0 {
-				canCol = true
-				if canRow {
-					break
-				}
-			}
-		}
-		if !canRow || !canCol {
-			return false
-		}
-	}
 
 	var canBox bool
 	// check each box has at least one possible cell left to place this number
