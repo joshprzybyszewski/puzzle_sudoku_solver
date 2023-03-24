@@ -166,4 +166,10 @@ func (w *workforce) sendWork(
 		}
 		cpy = initial
 	}
+	for _, pw := range f.extras {
+		if pw.applyCol(c, &cpy) {
+			w.work <- cpy
+		}
+		cpy = initial
+	}
 }

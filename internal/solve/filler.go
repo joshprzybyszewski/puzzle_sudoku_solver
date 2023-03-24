@@ -47,10 +47,23 @@ type filler struct {
 	/* 46656 = 6^6 */
 	entries   [256]pendingWrite
 	lastIndex int
+
+	extras []pendingWrite
 }
 
 func newFiller() filler {
 	return filler{}
+}
+
+func (rf *filler) add(
+	pw pendingWrite,
+) {
+	if rf.lastIndex < len(rf.entries) {
+		rf.entries[rf.lastIndex] = pw
+	} else {
+		rf.extras = append(rf.extras, pw)
+	}
+	rf.lastIndex++
 }
 
 func (rf *filler) fillRow(
@@ -88,8 +101,7 @@ func (rf *filler) fillRow(
 		return
 	}
 
-	rf.entries[rf.lastIndex] = pw
-	rf.lastIndex++
+	rf.add(pw)
 }
 
 func (rf *filler) fillCol(
@@ -126,6 +138,5 @@ func (rf *filler) fillCol(
 		return
 	}
 
-	rf.entries[rf.lastIndex] = pw
-	rf.lastIndex++
+	rf.add(pw)
 }
