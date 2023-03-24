@@ -81,7 +81,7 @@ func (w *workforce) startWorker(
 			if !ok {
 				return
 			}
-			worker.process(ctx)
+			worker.process()
 			idleLogDur = 500 * time.Millisecond
 		}
 	}
@@ -137,10 +137,8 @@ func (w *workforce) sendWork(
 	w.work <- initial
 	if len(w.workers) == 1 {
 		// if there is only one worker, then we _need_ the initial state to be solved.
-		select {
-		case <-ctx.Done():
-			return
-		}
+		<-ctx.Done()
+		return
 	}
 
 	c := initial.BestCol()

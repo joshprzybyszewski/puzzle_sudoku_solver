@@ -24,8 +24,6 @@ var (
 	iterFinish    = flag.Int("finish", int(model.MaxIterator), "if set, this will override the iterators final value")
 	numIterations = flag.Int("numIterations", 1, "set this value to run through the puzzles many times")
 
-	fetchNewPuzzles = flag.Bool("refresh", true, "if set, then it will fetch new puzzles")
-
 	shouldProfile = flag.Bool("profile", false, "if set, will produce a profile output")
 )
 

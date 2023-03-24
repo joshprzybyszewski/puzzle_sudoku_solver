@@ -11,10 +11,11 @@ type puzzle struct {
 	remaining     [16][16]uint8
 	remainingRows [16]uint8
 
+	recentlyPlaced bits
+
 	size uint8
 
-	recentlyPlaced bits
-	hasEasy        bool
+	hasEasy bool
 }
 
 func NewPuzzle(
@@ -131,10 +132,6 @@ func (p *puzzle) place(r, c uint8, val value) bool {
 	}
 
 	if val > value(p.Size()) || p.grid[r][c] != 0 {
-		// fmt.Printf("r: %d\n", r)
-		// fmt.Printf("c: %d\n", c)
-		// fmt.Printf("val: %d\n", val)
-		// fmt.Printf("%s\n", p)
 		panic(`dev error`)
 	}
 
@@ -321,7 +318,7 @@ func (p *puzzle) BestRow() uint8 {
 		}
 		if b < 0 || cur < b {
 			b = cur
-			br = uint8(r)
+			br = r
 		}
 	}
 
@@ -411,7 +408,15 @@ func (p *puzzle) IsSolved() bool {
 	return true
 }
 
-func (p puzzle) String() string {
+func (p *puzzle) String() string {
+	if p.Size() == 16 {
+		return p.sixteenString()
+	}
+
+	return `TODO`
+}
+
+func (p *puzzle) sixteenString() string {
 	output := make([]byte, 0, p.Size()*p.Size()*2)
 
 	for r := uint8(0); r < p.Size(); r++ {

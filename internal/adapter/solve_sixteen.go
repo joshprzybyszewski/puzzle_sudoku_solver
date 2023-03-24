@@ -22,14 +22,14 @@ func solveSixteen(
 		return err
 	}
 
-	g.Answer = convertSixteenAnswer(sol)
+	g.Answer = convertSixteenAnswer(&sol)
 	return nil
 }
 
 func convertSixteenAnswer(
-	p smodel.Sixteen,
+	p *smodel.Sixteen,
 ) model.Answer {
-	output := make([]byte, 0, int(len(p))*int(len(p))*2)
+	output := make([]byte, 0, len(p)*len(p)*2)
 
 	var c int
 	var v uint8

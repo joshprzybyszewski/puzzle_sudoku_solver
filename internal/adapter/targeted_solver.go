@@ -9,8 +9,8 @@ import (
 )
 
 type targetedSolver struct {
-	iter model.Iterator
 	id   model.GameID
+	iter model.Iterator
 
 	timeout time.Duration
 }

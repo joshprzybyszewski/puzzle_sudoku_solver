@@ -22,10 +22,10 @@ func NewSixteen(
 
 		if b >= '0' && b <= '9' {
 			if b == '1' && i+1 < len(task) && task[i+1] >= '0' && task[i+1] <= '6' {
-				puzz[r][c] = 10 + uint8(task[i+1]-'0')
+				puzz[r][c] = 10 + task[i+1] - '0'
 				i++
 			} else {
-				puzz[r][c] = uint8(b - '0')
+				puzz[r][c] = b - '0'
 			}
 		} else {
 			c += int(b - 'a')

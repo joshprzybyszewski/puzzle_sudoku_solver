@@ -1,13 +1,9 @@
 package solve
 
-import (
-	"context"
-)
-
 type worker struct {
-	state puzzle
-
 	sendAnswer func(puzzle)
+
+	state puzzle
 }
 
 func newWorker(
@@ -18,9 +14,7 @@ func newWorker(
 	}
 }
 
-func (w *worker) process(
-	ctx context.Context,
-) {
+func (w *worker) process() {
 	r := w.state.BestRow()
 	if r > w.state.Size() {
 		if w.state.IsSolved() {
@@ -41,13 +35,13 @@ func (w *worker) process(
 	cpy := w.state
 	for i := 0; i < f.lastIndex && i < len(f.entries); i++ {
 		if f.entries[i].applyRow(r, &w.state) {
-			w.process(ctx)
+			w.process()
 		}
 		w.state = cpy
 	}
 	for _, pw := range f.extras {
 		if pw.applyRow(r, &w.state) {
-			w.process(ctx)
+			w.process()
 		}
 		w.state = cpy
 	}
