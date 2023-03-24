@@ -40,7 +40,7 @@ func (w *worker) process(
 
 	cpy := w.state
 	for i := 0; i < f.lastIndex; i++ {
-		if f.entries[i].apply(&w.state) {
+		if f.entries[i].applyRow(r, &w.state) {
 			w.process(ctx)
 		}
 		w.state = cpy

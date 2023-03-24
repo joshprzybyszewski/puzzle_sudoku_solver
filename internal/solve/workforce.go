@@ -161,7 +161,7 @@ func (w *workforce) sendWork(
 
 	cpy := initial
 	for i := 0; i < f.lastIndex; i++ {
-		if f.entries[i].apply(&cpy) {
+		if f.entries[i].applyCol(c, &cpy) {
 			w.work <- cpy
 		}
 		cpy = initial

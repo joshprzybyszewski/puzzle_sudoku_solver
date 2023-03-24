@@ -1,20 +1,46 @@
 package solve
 
 type pendingWrite struct {
-	r, c uint8
-	val  value
-
-	prev *pendingWrite
+	indexes    [16]uint8
+	vals       [16]value
+	numIndexes uint8
 }
 
-func (pw *pendingWrite) apply(s *puzzle) bool {
-	if pw.val == 0 {
-		return true
+func (pw pendingWrite) add(
+	i uint8,
+	v value,
+) pendingWrite {
+	pw.indexes[pw.numIndexes] = i
+	pw.vals[pw.numIndexes] = v
+	pw.numIndexes++
+	return pw
+}
+
+func (pw *pendingWrite) applyRow(
+	r uint8,
+	s *puzzle,
+) bool {
+
+	for i := uint8(0); i < pw.numIndexes; i++ {
+		if !s.Place(r, pw.indexes[i], pw.vals[i]) {
+			return false
+		}
 	}
-	if !s.Place(pw.r, pw.c, pw.val) {
-		return false
+	return true
+}
+
+func (pw *pendingWrite) applyCol(
+	c uint8,
+	s *puzzle,
+) bool {
+
+	for i := uint8(0); i < pw.numIndexes; i++ {
+		if !s.Place(pw.indexes[i], c, pw.vals[i]) {
+			return false
+		}
 	}
-	return pw.prev.apply(s)
+
+	return true
 }
 
 type filler struct {
@@ -31,7 +57,7 @@ func (rf *filler) fillRow(
 	s *puzzle,
 	r, c uint8,
 	hasPlaced bits,
-	prev pendingWrite,
+	pw pendingWrite,
 ) {
 
 	var val value
@@ -55,19 +81,14 @@ func (rf *filler) fillRow(
 				s,
 				r, c+1,
 				hasPlaced|b,
-				pendingWrite{
-					r:    r,
-					c:    c,
-					val:  val,
-					prev: &prev,
-				},
+				pw.add(c, val),
 			)
 		}
 
 		return
 	}
 
-	rf.entries[rf.lastIndex] = prev
+	rf.entries[rf.lastIndex] = pw
 	rf.lastIndex++
 }
 
@@ -75,7 +96,7 @@ func (rf *filler) fillCol(
 	s *puzzle,
 	r, c uint8,
 	hasPlaced bits,
-	prev pendingWrite,
+	pw pendingWrite,
 ) {
 
 	var val value
@@ -98,18 +119,13 @@ func (rf *filler) fillCol(
 				s,
 				r+1, c,
 				hasPlaced|b,
-				pendingWrite{
-					r:    r,
-					c:    c,
-					val:  val,
-					prev: &prev,
-				},
+				pw.add(r, val),
 			)
 		}
 
 		return
 	}
 
-	rf.entries[rf.lastIndex] = prev
+	rf.entries[rf.lastIndex] = pw
 	rf.lastIndex++
 }

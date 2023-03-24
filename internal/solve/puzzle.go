@@ -5,6 +5,9 @@ type puzzle struct {
 
 	cannots [16][16]bits
 
+	placedRows [16]bits
+	placedCols [16]bits
+
 	remaining     [16][16]uint8
 	remainingRows [16]uint8
 
@@ -138,6 +141,8 @@ func (p *puzzle) place(r, c uint8, val value) bool {
 	p.grid[r][c] = val
 	p.cannots[r][c] = allBits
 	p.remaining[r][c] = 0
+	p.placedRows[r] |= b
+	p.placedCols[c] |= b
 	p.remainingRows[r]--
 
 	for other := uint8(0); other < p.Size(); other++ {
@@ -216,31 +221,20 @@ func (p *puzzle) validate(
 
 	// Check that each row and each col has at least one possible cell left for placing this value
 	for r = 0; r < p.Size(); r++ {
-		canRow, canCol = false, false
+		canRow, canCol = p.placedRows[r]&b != 0, p.placedCols[r]&b != 0
+		if canRow && canCol {
+			continue
+		}
 		for c = 0; c < p.Size(); c++ {
 			// check row
-			if p.grid[r][c] != 0 {
-				if p.grid[r][c] == v {
-					canRow = true
-					if canCol {
-						break
-					}
-				}
-			} else if p.cannots[r][c]&b == 0 {
+			if p.cannots[r][c]&b == 0 {
 				canRow = true
 				if canCol {
 					break
 				}
 			}
 			// Use the (r, c) vars, but invert the order to check col
-			if p.grid[c][r] != 0 {
-				if p.grid[c][r] == v {
-					canCol = true
-					if canRow {
-						break
-					}
-				}
-			} else if p.cannots[c][r]&b == 0 {
+			if p.cannots[c][r]&b == 0 {
 				canCol = true
 				if canRow {
 					break
