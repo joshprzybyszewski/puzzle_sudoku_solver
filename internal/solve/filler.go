@@ -45,7 +45,7 @@ func (pw *pendingWrite) applyCol(
 
 type filler struct {
 	/* 46656 = 6^6 */
-	entries   [46656]pendingWrite
+	entries   [256]pendingWrite
 	lastIndex int
 }
 
