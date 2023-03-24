@@ -219,6 +219,7 @@ func (p *puzzle) checkBoxEliminations(
 
 	var r, c uint8
 	var r2, c2 uint8
+	var last uint8
 
 	var hasBox bool
 	var bc, bc2 boxCoords
@@ -228,10 +229,17 @@ func (p *puzzle) checkBoxEliminations(
 			continue
 		}
 		hasBox = false
+		last = p.Size()
 		for c = 0; c < p.Size(); c++ {
 			if p.cannots[r][c]&b != 0 {
 				// cannot play it here
 				continue
+			}
+
+			if last == p.Size() {
+				last = c
+			} else {
+				last = p.Size() + 1
 			}
 
 			bc2 = p.getBoxCoords(r, c)
@@ -245,6 +253,12 @@ func (p *puzzle) checkBoxEliminations(
 		}
 		if !hasBox {
 			return false
+		}
+		if last < p.Size() {
+			if !p.place(r, last, v) {
+				return false
+			}
+			continue
 		}
 
 		// we know that the box defined as bc must contain v
@@ -266,10 +280,17 @@ func (p *puzzle) checkBoxEliminations(
 			continue
 		}
 		hasBox = false
+		last = p.Size()
 		for r = 0; r < p.Size(); r++ {
 			if p.cannots[r][c]&b != 0 {
 				// cannot play it here
 				continue
+			}
+
+			if last == p.Size() {
+				last = r
+			} else {
+				last = p.Size() + 1
 			}
 
 			bc2 = p.getBoxCoords(r, c)
@@ -283,6 +304,12 @@ func (p *puzzle) checkBoxEliminations(
 		}
 		if !hasBox {
 			return false
+		}
+		if last < p.Size() {
+			if !p.place(last, c, v) {
+				return false
+			}
+			continue
 		}
 
 		// we know that the box defined as bc must contain v
