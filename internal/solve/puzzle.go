@@ -43,8 +43,14 @@ func NewPuzzle(
 			if input[r][c] == 0 {
 				continue
 			}
-			puzz.InitialPlace(r, c, input[r][c])
+			if !puzz.place(r, c, value(input[r][c])) {
+				panic(`dev error`)
+			}
 		}
+	}
+
+	if !puzz.FinishInitialPlaces() {
+		panic(`dev error`)
 	}
 
 	return puzz
@@ -66,10 +72,37 @@ func (p *puzzle) Val(r, c uint8) value {
 	return p.grid[r][c]
 }
 
-func (p *puzzle) InitialPlace(r, c, val uint8) {
-	if !p.Place(r, c, value(val)) {
-		panic(`dev error`)
+func (p *puzzle) FinishInitialPlaces() bool {
+	for p.hasEasy {
+		p.hasEasy = false
+		if !p.checkAllForLast() {
+			return false
+		}
+
+		placed := p.recentlyPlaced
+		p.recentlyPlaced = 0
+
+		for v := value(1); v <= value(p.Size()); v++ {
+			if placed&(v.bit()) == 0 {
+				continue
+			}
+
+			if !p.checkBoxEliminations(v) {
+				return false
+			}
+
+			if !p.validate(v) {
+				return false
+			}
+
+			placed ^= v.bit()
+			if placed == 0 {
+				break
+			}
+		}
 	}
+
+	return true
 }
 
 func (p *puzzle) placeLast(r, c uint8) bool {
@@ -107,7 +140,7 @@ func (p *puzzle) Place(r, c uint8, val value) bool {
 				continue
 			}
 
-			if !p.checkBoxEliminations(val) {
+			if !p.checkBoxEliminations(v) {
 				return false
 			}
 
