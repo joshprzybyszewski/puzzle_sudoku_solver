@@ -207,12 +207,13 @@ func (p *puzzle) place(r, c uint8, val value) bool {
 
 	// update this box (iterate through the 16 nearby)
 	bi := p.getBoxIndex(r, c)
+	var bc boxCell
 	for bci := uint8(0); bci < p.size; bci++ {
-		box := p.boxes[bi][bci]
-		if box.row == r && box.col == c {
+		bc = p.boxes[bi][bci]
+		if bc.row == r && bc.col == c {
 			continue
 		}
-		if !p.removeOption(box.row, box.col, b) {
+		if !p.removeOption(bc.row, bc.col, b) {
 			return false
 		}
 	}
@@ -268,7 +269,7 @@ func (p *puzzle) checkBoxEliminations(
 	var last uint8
 
 	var hasBox bool
-	var bi, bi2 uint8
+	var bi, bi2, bci uint8
 
 	for r = 0; r < p.Size(); r++ {
 		if p.placedRows[r]&b != 0 {
@@ -306,18 +307,22 @@ func (p *puzzle) checkBoxEliminations(
 			}
 			continue
 		}
+		if bi >= p.size {
+			continue
+		}
 
-		// we know that the box defined as bc must contain v
+		// we know that the box at bi must contain v
 		// in row r. eliminate the rest.
-		if bi < p.size {
-			for bci := uint8(0); bci < p.size; bci++ {
-				box := p.boxes[bi][bci]
-				if r == box.row {
-					continue
-				}
-				if !p.removeOption(box.row, box.col, b) {
-					return false
-				}
+		for bci = uint8(0); bci < p.size; bci++ {
+			if r == p.boxes[bi][bci].row {
+				continue
+			}
+			if !p.removeOption(
+				p.boxes[bi][bci].row,
+				p.boxes[bi][bci].col,
+				b,
+			) {
+				return false
 			}
 		}
 	}
@@ -358,18 +363,22 @@ func (p *puzzle) checkBoxEliminations(
 			}
 			continue
 		}
+		if bi >= p.size {
+			continue
+		}
 
-		// we know that the box defined as bc must contain v
-		// in row r. eliminate the rest.
-		if bi < p.size {
-			for bci := uint8(0); bci < p.size; bci++ {
-				box := p.boxes[bi][bci]
-				if c == box.col {
-					continue
-				}
-				if !p.removeOption(box.row, box.col, b) {
-					return false
-				}
+		// we know that the box at bi must contain v
+		// in col c. eliminate the rest.
+		for bci = uint8(0); bci < p.size; bci++ {
+			if c == p.boxes[bi][bci].col {
+				continue
+			}
+			if !p.removeOption(
+				p.boxes[bi][bci].row,
+				p.boxes[bi][bci].col,
+				b,
+			) {
+				return false
 			}
 		}
 	}
@@ -382,41 +391,33 @@ func (p *puzzle) validate(
 ) bool {
 	b := v.bit()
 
-	var lastR, lastC uint8
+	var bc, last boxCell
 
-	var canBox bool
+	var bci uint8
+
 	// check each box has at least one possible cell left to place this number
 	for bi := uint8(0); bi < p.size; bi++ {
-		canBox = false
-		lastR = p.Size()
-		lastC = p.Size()
-		for bci := uint8(0); bci < p.size; bci++ {
-			box := p.boxes[bi][bci]
-			if p.grid[box.row][box.col] != 0 {
-				if p.grid[box.row][box.col] == v {
-					canBox = true
-					lastR = p.Size() + 1
-					lastC = p.Size() + 1
+		last.row = p.Size()
+		for bci = uint8(0); bci < p.size; bci++ {
+			bc = p.boxes[bi][bci]
+			if p.grid[bc.row][bc.col] != 0 {
+				if p.grid[bc.row][bc.col] == v {
+					last.row = p.Size() + 1
 					break
 				}
-			} else if p.cannots[box.row][box.col]&b == 0 {
-				if canBox {
-					lastR = p.Size() + 1
-					lastC = p.Size() + 1
+			} else if p.cannots[bc.row][bc.col]&b == 0 {
+				if last.row != p.Size() {
+					last.row = p.Size() + 1
 					break
 				}
-				canBox = true
-				lastR = box.row
-				lastC = box.col
+				last = bc
 			}
 		}
-		if !canBox {
+		if last.row == p.Size() {
 			return false
 		}
-		if lastR < p.Size() {
-			if !p.place(lastR, lastC, v) {
-				return false
-			}
+		if last.row < p.Size() && !p.place(last.row, last.col, v) {
+			return false
 		}
 	}
 
@@ -521,13 +522,13 @@ func (p *puzzle) IsSolved() bool {
 	}
 
 	var seen bits
+	var bci uint8
 
 	// check each box that it has all the numbers
 	for bi := uint8(0); bi < p.size; bi++ {
 		seen = 0
-		for bci := uint8(0); bci < p.size; bci++ {
-			box := p.boxes[bi][bci]
-			b = p.grid[box.row][box.col].bit()
+		for bci = 0; bci < p.size; bci++ {
+			b = p.grid[p.boxes[bi][bci].row][p.boxes[bi][bci].col].bit()
 			if seen&b == b {
 				// box has already seen it
 				return false
