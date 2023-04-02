@@ -1,51 +1,60 @@
 package solve
 
 func init() {
-	for r := range nineBoxCoords {
-		for c := range nineBoxCoords {
-			nineBoxCoords[r][c].startR = 3 * (uint8(r) / 3)
-			nineBoxCoords[r][c].stopR = nineBoxCoords[r][c].startR + 3
+	num := [16]int{}
 
-			nineBoxCoords[r][c].startC = 3 * (uint8(c) / 3)
-			nineBoxCoords[r][c].stopC = nineBoxCoords[r][c].startC + 3
+	for r := uint8(0); r < 9; r++ {
+		for c := uint8(0); c < 9; c++ {
+			bci := (3 * (r / 3)) + (c / 3)
+			defaultNineBoxLookups[r][c] = bci
+			defaultNineBoxes[bci][num[bci]] = boxCell{
+				row: r,
+				col: c,
+			}
+			num[bci]++
 		}
 	}
 
-	for r := range twelveBoxCoords {
-		for c := range twelveBoxCoords {
-			twelveBoxCoords[r][c].startR = 3 * (uint8(r) / 3)
-			twelveBoxCoords[r][c].stopR = twelveBoxCoords[r][c].startR + 3
-
-			twelveBoxCoords[r][c].startC = 4 * (uint8(c) / 4)
-			twelveBoxCoords[r][c].stopC = twelveBoxCoords[r][c].startC + 4
+	num = [16]int{}
+	for r := uint8(0); r < 12; r++ {
+		for c := uint8(0); c < 12; c++ {
+			bci := (3 * (r / 3)) + (c / 4)
+			defaultTwelveBoxLookups[r][c] = bci
+			defaultTwelveBoxes[bci][num[bci]] = boxCell{
+				row: r,
+				col: c,
+			}
+			num[bci]++
 		}
 	}
 
-	for r := range sixteenBoxCoords {
-		for c := range sixteenBoxCoords {
-			sixteenBoxCoords[r][c].startR = 4 * (uint8(r) / 4)
-			sixteenBoxCoords[r][c].stopR = sixteenBoxCoords[r][c].startR + 4
-
-			sixteenBoxCoords[r][c].startC = 4 * (uint8(c) / 4)
-			sixteenBoxCoords[r][c].stopC = sixteenBoxCoords[r][c].startC + 4
+	num = [16]int{}
+	for r := uint8(0); r < 16; r++ {
+		for c := uint8(0); c < 16; c++ {
+			bci := (4 * (r / 4)) + (c / 4)
+			defaultSixteenBoxLookups[r][c] = bci
+			defaultSixteenBoxes[bci][num[bci]] = boxCell{
+				row: r,
+				col: c,
+			}
+			num[bci]++
 		}
 	}
 }
 
 var (
-	nineBoxCoords    [9][9]boxCoords
-	twelveBoxCoords  [12][12]boxCoords
-	sixteenBoxCoords [16][16]boxCoords
+	defaultNineBoxLookups    [16][16]uint8
+	defaultTwelveBoxLookups  [16][16]uint8
+	defaultSixteenBoxLookups [16][16]uint8
 
-	invalidBoxCoords = boxCoords{
-		startR: 17,
-		stopR:  18,
-		startC: 19,
-		stopC:  20,
-	}
+	defaultNineBoxes    [16]box
+	defaultTwelveBoxes  [16]box
+	defaultSixteenBoxes [16]box
 )
 
-type boxCoords struct {
-	startR, stopR uint8
-	startC, stopC uint8
+type box [16]boxCell
+
+type boxCell struct {
+	row uint8
+	col uint8
 }

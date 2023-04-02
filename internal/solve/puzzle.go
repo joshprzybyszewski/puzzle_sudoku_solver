@@ -1,6 +1,9 @@
 package solve
 
 type puzzle struct {
+	boxes [16]box
+	box   [16][16]uint8
+
 	grid [16][16]value
 
 	cannots [16][16]bits
@@ -23,6 +26,18 @@ func NewPuzzle(
 ) puzzle {
 	puzz := puzzle{
 		size: uint8(len(input)),
+	}
+
+	switch puzz.size {
+	case 9:
+		puzz.boxes = defaultNineBoxes
+		puzz.box = defaultNineBoxLookups
+	case 12:
+		puzz.boxes = defaultTwelveBoxes
+		puzz.box = defaultTwelveBoxLookups
+	case 16:
+		puzz.boxes = defaultSixteenBoxes
+		puzz.box = defaultSixteenBoxLookups
 	}
 
 	var allCannots bits
@@ -191,15 +206,14 @@ func (p *puzzle) place(r, c uint8, val value) bool {
 	}
 
 	// update this box (iterate through the 16 nearby)
-	bc := p.getBoxCoords(r, c)
-	for r2 := bc.startR; r2 < bc.stopR; r2++ {
-		for c2 := bc.startC; c2 < bc.stopC; c2++ {
-			if r2 == r && c2 == c {
-				continue
-			}
-			if !p.removeOption(r2, c2, b) {
-				return false
-			}
+	bi := p.getBoxIndex(r, c)
+	for bci := uint8(0); bci < p.size; bci++ {
+		box := p.boxes[bi][bci]
+		if box.row == r && box.col == c {
+			continue
+		}
+		if !p.removeOption(box.row, box.col, b) {
+			return false
 		}
 	}
 
@@ -251,11 +265,10 @@ func (p *puzzle) checkBoxEliminations(
 	b := v.bit()
 
 	var r, c uint8
-	var r2, c2 uint8
 	var last uint8
 
 	var hasBox bool
-	var bc, bc2 boxCoords
+	var bi, bi2 uint8
 
 	for r = 0; r < p.Size(); r++ {
 		if p.placedRows[r]&b != 0 {
@@ -275,12 +288,12 @@ func (p *puzzle) checkBoxEliminations(
 				last = p.Size() + 1
 			}
 
-			bc2 = p.getBoxCoords(r, c)
+			bi2 = p.getBoxIndex(r, c)
 			if !hasBox {
-				bc = bc2
+				bi = bi2
 				hasBox = true
-			} else if bc != bc2 {
-				bc = boxCoords{}
+			} else if bi != bi2 {
+				bi = p.size + 1
 				break
 			}
 		}
@@ -296,12 +309,13 @@ func (p *puzzle) checkBoxEliminations(
 
 		// we know that the box defined as bc must contain v
 		// in row r. eliminate the rest.
-		for r2 = bc.startR; r2 < bc.stopR; r2++ {
-			if r == r2 {
-				continue
-			}
-			for c2 = bc.startC; c2 < bc.stopC; c2++ {
-				if !p.removeOption(r2, c2, b) {
+		if bi < p.size {
+			for bci := uint8(0); bci < p.size; bci++ {
+				box := p.boxes[bi][bci]
+				if r == box.row {
+					continue
+				}
+				if !p.removeOption(box.row, box.col, b) {
 					return false
 				}
 			}
@@ -326,12 +340,12 @@ func (p *puzzle) checkBoxEliminations(
 				last = p.Size() + 1
 			}
 
-			bc2 = p.getBoxCoords(r, c)
+			bi2 = p.getBoxIndex(r, c)
 			if !hasBox {
-				bc = bc2
+				bi = bi2
 				hasBox = true
-			} else if bc != bc2 {
-				bc = boxCoords{}
+			} else if bi != bi2 {
+				bi = p.size + 1
 				break
 			}
 		}
@@ -347,13 +361,13 @@ func (p *puzzle) checkBoxEliminations(
 
 		// we know that the box defined as bc must contain v
 		// in row r. eliminate the rest.
-		for c2 = bc.startC; c2 < bc.stopC; c2++ {
-			if c == c2 {
-				continue
-			}
-			for r2 = bc.startR; r2 < bc.stopR; r2++ {
-
-				if !p.removeOption(r2, c2, b) {
+		if bi < p.size {
+			for bci := uint8(0); bci < p.size; bci++ {
+				box := p.boxes[bi][bci]
+				if c == box.col {
+					continue
+				}
+				if !p.removeOption(box.row, box.col, b) {
 					return false
 				}
 			}
@@ -368,38 +382,32 @@ func (p *puzzle) validate(
 ) bool {
 	b := v.bit()
 
-	var r, c uint8
 	var lastR, lastC uint8
 
 	var canBox bool
 	// check each box has at least one possible cell left to place this number
-	for bc := p.getBoxCoords(0, 0); ; {
+	for bi := uint8(0); bi < p.size; bi++ {
 		canBox = false
 		lastR = p.Size()
 		lastC = p.Size()
-		for r = bc.startR; r < bc.stopR; r++ {
-			for c = bc.startC; c < bc.stopC; c++ {
-				if p.grid[r][c] != 0 {
-					if p.grid[r][c] == v {
-						canBox = true
-						lastR = p.Size() + 1
-						lastC = p.Size() + 1
-						break
-					}
-				} else if p.cannots[r][c]&b == 0 {
-					if canBox {
-						lastR = p.Size() + 1
-						lastC = p.Size() + 1
-						break
-					}
+		for bci := uint8(0); bci < p.size; bci++ {
+			box := p.boxes[bi][bci]
+			if p.grid[box.row][box.col] != 0 {
+				if p.grid[box.row][box.col] == v {
 					canBox = true
-					lastR = r
-					lastC = c
-					continue
+					lastR = p.Size() + 1
+					lastC = p.Size() + 1
+					break
 				}
-			}
-			if lastR > p.Size() {
-				break
+			} else if p.cannots[box.row][box.col]&b == 0 {
+				if canBox {
+					lastR = p.Size() + 1
+					lastC = p.Size() + 1
+					break
+				}
+				canBox = true
+				lastR = box.row
+				lastC = box.col
 			}
 		}
 		if !canBox {
@@ -410,28 +418,13 @@ func (p *puzzle) validate(
 				return false
 			}
 		}
-		if bc.stopC < p.Size() {
-			bc = p.getBoxCoords(bc.startR, bc.stopC)
-		} else if bc.stopR < p.Size() {
-			bc = p.getBoxCoords(bc.stopR, 0)
-		} else {
-			break
-		}
 	}
 
 	return true
 }
 
-func (p *puzzle) getBoxCoords(r, c uint8) boxCoords {
-	switch p.size {
-	case 9:
-		return nineBoxCoords[r][c]
-	case 12:
-		return twelveBoxCoords[r][c]
-	case 16:
-		return sixteenBoxCoords[r][c]
-	}
-	return invalidBoxCoords
+func (p *puzzle) getBoxIndex(r, c uint8) uint8 {
+	return p.box[r][c]
 }
 
 func (p *puzzle) BestRow() uint8 {
@@ -502,7 +495,7 @@ func (p *puzzle) BestCol() uint8 {
 }
 
 func (p *puzzle) IsSolved() bool {
-	var row, col, box, b bits
+	var row, col, b bits
 	// check each row/col that it has all the numbers
 	var r, c uint8
 	for r = 0; r < p.Size(); r++ {
@@ -527,25 +520,19 @@ func (p *puzzle) IsSolved() bool {
 		}
 	}
 
+	var seen bits
+
 	// check each box that it has all the numbers
-	for bc := p.getBoxCoords(0, 0); ; {
-		box = 0
-		for r = bc.startR; r < bc.stopR; r++ {
-			for c = bc.startC; c < bc.stopC; c++ {
-				b = p.grid[r][c].bit()
-				if box&b == b {
-					// box has already seen it
-					return false
-				}
-				box |= b
+	for bi := uint8(0); bi < p.size; bi++ {
+		seen = 0
+		for bci := uint8(0); bci < p.size; bci++ {
+			box := p.boxes[bi][bci]
+			b = p.grid[box.row][box.col].bit()
+			if seen&b == b {
+				// box has already seen it
+				return false
 			}
-		}
-		if bc.stopC < p.Size() {
-			bc = p.getBoxCoords(bc.startR, bc.stopC)
-		} else if bc.stopR < p.Size() {
-			bc = p.getBoxCoords(bc.stopR, 0)
-		} else {
-			break
+			seen |= b
 		}
 	}
 
