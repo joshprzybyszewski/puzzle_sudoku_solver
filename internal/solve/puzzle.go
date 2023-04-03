@@ -24,20 +24,63 @@ type puzzle struct {
 func NewPuzzle(
 	input [][]uint8,
 ) puzzle {
-	puzz := puzzle{
-		size: uint8(len(input)),
+	switch len(input) {
+	case 9:
+		return newPuzzle(
+			input,
+			defaultNineBoxes,
+			defaultNineBoxLookups,
+		)
+	case 12:
+		return newPuzzle(
+			input,
+			defaultTwelveBoxes,
+			defaultTwelveBoxLookups,
+		)
+	case 16:
+		return newPuzzle(
+			input,
+			defaultSixteenBoxes,
+			defaultSixteenBoxLookups,
+		)
 	}
 
-	switch puzz.size {
-	case 9:
-		puzz.boxes = defaultNineBoxes
-		puzz.box = defaultNineBoxLookups
-	case 12:
-		puzz.boxes = defaultTwelveBoxes
-		puzz.box = defaultTwelveBoxLookups
-	case 16:
-		puzz.boxes = defaultSixteenBoxes
-		puzz.box = defaultSixteenBoxLookups
+	panic(`dev error`)
+}
+
+func NewPuzzleWithBoxLookups(
+	input [][]uint8,
+	boxNums [][]uint8,
+) puzzle {
+
+	var lookup [16][16]uint8
+	for i := range boxNums {
+		for j := range boxNums[i] {
+			lookup[i][j] = uint8(boxNums[i][j] - 1)
+		}
+	}
+	var boxcells [16]box
+	size := uint8(len(boxNums))
+	for i := range boxNums {
+		boxcells[i] = createBox(uint8(i), lookup, size)
+	}
+
+	return newPuzzle(
+		input,
+		boxcells,
+		lookup,
+	)
+}
+
+func newPuzzle(
+	input [][]uint8,
+	boxes [16]box,
+	boxIndexes [16][16]uint8,
+) puzzle {
+	puzz := puzzle{
+		size:  uint8(len(input)),
+		boxes: boxes,
+		box:   boxIndexes,
 	}
 
 	var allCannots bits
@@ -55,7 +98,7 @@ func NewPuzzle(
 
 	for r := uint8(0); r < puzz.Size(); r++ {
 		for c := uint8(0); c < puzz.Size(); c++ {
-			if input[r][c] == 0 {
+			if len(input[r]) == 0 || input[r][c] == 0 {
 				continue
 			}
 			if !puzz.place(r, c, value(input[r][c])) {
@@ -500,6 +543,9 @@ func (p *puzzle) IsSolved() bool {
 	// check each row/col that it has all the numbers
 	var r, c uint8
 	for r = 0; r < p.Size(); r++ {
+		if p.remainingRows[r] > 0 {
+			return false
+		}
 		row = 0
 		col = 0
 		for c = 0; c < p.Size(); c++ {

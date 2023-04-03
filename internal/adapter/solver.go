@@ -9,7 +9,8 @@ import (
 )
 
 const (
-	URL = `https://www.puzzle-sudoku.com/`
+	JigsawURL = `https://www.puzzle-jigsaw-sudoku.com/`
+	URL       = `https://www.puzzle-sudoku.com/`
 )
 
 var (
@@ -27,11 +28,11 @@ func NewSolver(
 	min, max smodel.Iterator,
 	timeout time.Duration,
 ) solver {
-	if min < smodel.MinIterator {
-		min = smodel.MinIterator
+	if min < smodel.MinIteratorJigsaw {
+		min = smodel.MinIteratorJigsaw
 	}
-	if max > smodel.MaxIterator {
-		max = smodel.MaxIterator
+	if max > smodel.MaxIteratorJigsaw {
+		max = smodel.MaxIteratorJigsaw
 	}
 	if timeout < 0 {
 		timeout = 0
@@ -54,17 +55,35 @@ func (s solver) Max() model.Iterator {
 	return s.max
 }
 
+func (s solver) CanSolve(iter model.Iterator) bool {
+	i := smodel.Iterator(iter)
+	if i < smodel.MinIteratorStandard || i > smodel.MaxIteratorJigsaw {
+		return false
+	}
+	if i > smodel.MaxIteratorStandard && i < smodel.MinIteratorJigsaw {
+		return false
+	}
+	return true
+}
+
 func (s solver) Timeout() time.Duration {
 	return s.timeout
 }
 
-func (s solver) URL() string {
+func (s solver) URL(i model.Iterator) string {
+	if i >= model.Iterator(smodel.MinIteratorJigsaw) {
+		return JigsawURL
+	}
 	return URL
 }
 
 func (s solver) Solve(g *model.Game) error {
 	ctx, cancelFn := context.WithTimeout(context.Background(), s.Timeout())
 	defer cancelFn()
+
+	if g.Iterator >= model.Iterator(smodel.MinIteratorJigsaw) {
+		return solveJigsaw(ctx, g)
+	}
 
 	return solveGame(ctx, g)
 }

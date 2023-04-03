@@ -20,10 +20,10 @@ func NewTargetedSolver(
 	id model.GameID,
 	timeout time.Duration,
 ) targetedSolver {
-	if iter < smodel.MinIterator {
+	if iter < smodel.MinIteratorStandard {
 		panic(`unexpected`)
 	}
-	if iter > smodel.MinIterator {
+	if iter > smodel.MinIteratorStandard {
 		panic(`unexpected`)
 	}
 	if timeout < 0 {

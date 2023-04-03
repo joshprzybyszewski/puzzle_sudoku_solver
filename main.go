@@ -20,8 +20,8 @@ var (
 
 	puzzID = flag.String("puzzID", "", "if set, then this will run a specific puzzle")
 
-	iterStart     = flag.Int("start", int(model.MinIterator), "if set, this will override the iterators starting value")
-	iterFinish    = flag.Int("finish", int(model.MaxIterator), "if set, this will override the iterators final value")
+	iterStart     = flag.Int("start", int(model.MinIteratorStandard), "if set, this will override the iterators starting value")
+	iterFinish    = flag.Int("finish", int(model.MaxIteratorJigsaw), "if set, this will override the iterators final value")
 	numIterations = flag.Int("numIterations", 1, "set this value to run through the puzzles many times")
 
 	shouldProfile = flag.Bool("profile", false, "if set, will produce a profile output")
@@ -33,8 +33,8 @@ func main() {
 	if *updateResults {
 		results.Generate(
 			adapter.NewSolver(
-				model.MinIterator,
-				model.MaxIterator,
+				model.MinIteratorStandard,
+				model.MaxIteratorJigsaw,
 				2*time.Second,
 			),
 		)

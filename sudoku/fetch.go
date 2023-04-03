@@ -15,7 +15,7 @@ func Fetch(
 	g, err := manual.Fetch(
 		ctx,
 		adapter.URL,
-		model.Iterator(smodel.MinIterator),
+		model.Iterator(smodel.MinIteratorStandard),
 	)
 	if err != nil {
 		return [9][9]uint8{}, err
@@ -30,7 +30,7 @@ func Fetch12x12(
 	g, err := manual.Fetch(
 		ctx,
 		adapter.URL,
-		model.Iterator(smodel.Iterator12x12),
+		model.Iterator(smodel.IteratorStandard12x12),
 	)
 	if err != nil {
 		return [12][12]uint8{}, err
@@ -45,7 +45,7 @@ func Fetch16x16(
 	g, err := manual.Fetch(
 		ctx,
 		adapter.URL,
-		model.Iterator(smodel.Iterator16x16),
+		model.Iterator(smodel.IteratorStandard16x16),
 	)
 	if err != nil {
 		return [16][16]uint8{}, err
