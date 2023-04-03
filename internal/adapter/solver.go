@@ -28,8 +28,8 @@ func NewSolver(
 	min, max smodel.Iterator,
 	timeout time.Duration,
 ) solver {
-	if min < smodel.MinIteratorJigsaw {
-		min = smodel.MinIteratorJigsaw
+	if min < smodel.MinIteratorStandard {
+		min = smodel.MinIteratorStandard
 	}
 	if max > smodel.MaxIteratorJigsaw {
 		max = smodel.MaxIteratorJigsaw
